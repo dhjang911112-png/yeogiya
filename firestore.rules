@@ -1,6 +1,27 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+    function isAdmin() {
+      return request.auth != null && request.auth.token.email == 'uec9ab4ec9881ec9e90@yeogiya.app';
+    }
+
+    match /grants/{gid} {
+      allow read: if request.auth != null
+        && (isAdmin() || resource.data.toKey == request.auth.token.email);
+      allow create: if isAdmin()
+        && request.resource.data.amount is int
+        && request.resource.data.amount > 0
+        && request.resource.data.amount <= 100000000
+        && request.resource.data.toKey is string
+        && request.resource.data.claimed == false;
+      allow update: if request.auth != null
+        && resource.data.toKey == request.auth.token.email
+        && resource.data.claimed == false
+        && request.resource.data.claimed == true
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['claimed', 'claimedAt']);
+      allow delete: if false;
+    }
+
     match /users/{uid} {
       allow read: if request.auth != null && request.auth.uid == uid;
 

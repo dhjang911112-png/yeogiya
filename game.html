@@ -538,6 +538,7 @@ class Component extends DCLogic {
     window.addEventListener('pagehide', () => { this.saveLocal(true); this.netGone(); });
     document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') this.saveLocal(true); });
     this.claimGrants();
+    this.listenGrants();
     if (YG.load('banned', false)) { this.showBan(); return; }
     const c = YG.connect();
     if (!c) { YG.status(false, 0); return; }
@@ -577,6 +578,59 @@ class Component extends DCLogic {
       const fmt = (n) => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
       setTimeout(() => this.flash('운영자 지급 +' + fmt(sum) + '원이 들어왔어요!', false), 1200);
     }).catch(() => {});
+  }
+
+  isAdmin() { return !!(YG.acct && YG.acct.nick === '운영자' && window.YGA && YGA.user); }
+
+  parseWon(str) {
+    let s = String(str || '').replace(/[,원\s]/g, '');
+    let total = 0, m;
+    if ((m = /^(\d+(?:\.\d+)?)억(.*)$/.exec(s))) { total += parseFloat(m[1]) * 100000000; s = m[2]; }
+    if ((m = /^(\d+(?:\.\d+)?)천만(.*)$/.exec(s))) { total += parseFloat(m[1]) * 10000000; s = m[2]; }
+    else if ((m = /^(\d+(?:\.\d+)?)백만(.*)$/.exec(s))) { total += parseFloat(m[1]) * 1000000; s = m[2]; }
+    else if ((m = /^(\d+(?:\.\d+)?)만(.*)$/.exec(s))) { total += parseFloat(m[1]) * 10000; s = m[2]; }
+    if ((m = /^(\d+(?:\.\d+)?)천(.*)$/.exec(s))) { total += parseFloat(m[1]) * 1000; s = m[2]; }
+    if (s) { if (!/^\d+$/.test(s)) return NaN; total += parseInt(s, 10); }
+    return Math.round(total);
+  }
+
+  adminCmd(raw) {
+    const fmt = (n) => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    const parts = raw.slice(1).trim().split(/\s+/);
+    const cmd = parts[0];
+    if (cmd !== '지급') { this.flash('명령어: /지급 닉네임 금액 (예: /지급 kk 2000만)', true); return; }
+    if (!this.isAdmin()) { this.flash('운영자 계정만 쓸 수 있는 명령이에요', true); return; }
+    const nick = parts[1], amount = this.parseWon(parts.slice(2).join(''));
+    if (!nick || !amount || isNaN(amount) || amount <= 0) { this.flash('예: /지급 kk 2000만  ·  /지급 kk 500000', true); return; }
+    if (amount > 100000000) { this.flash('한 번에 최대 1억 원까지 지급할 수 있어요', true); return; }
+    YGA.db.collection('grants').add({ toNick: nick, toKey: YGA.nickEmail(nick), amount: amount, claimed: false, by: YG.acct.nick, at: firebase.firestore.FieldValue.serverTimestamp() })
+      .then(() => this.flash(nick + '님에게 ' + fmt(amount) + '원 지급했어요', false))
+      .catch((e) => { console.error(e); this.flash('지급 실패 · 서버 규칙을 확인해 주세요', true); });
+  }
+
+  listenGrants() {
+    if (!YG.acct || !window.YGA || !YGA.user || this.grantUnsub) return;
+    const fmt = (n) => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    const me = YGA.user.email;
+    const q = YGA.db.collection('grants').where('toKey', '==', me).where('claimed', '==', false);
+    this.grantUnsub = q.onSnapshot((snap) => {
+      snap.docChanges().forEach((ch) => {
+        if (ch.type !== 'added') return;
+        const ref = ch.doc.ref;
+        YGA.db.runTransaction(async (tx) => {
+          const d = await tx.get(ref);
+          if (!d.exists || d.data().claimed) return 0;
+          tx.update(ref, { claimed: true, claimedAt: firebase.firestore.FieldValue.serverTimestamp() });
+          return Number(d.data().amount) || 0;
+        }).then((amt) => {
+          if (!amt) return;
+          const money = Math.min(100000000, this.state.money + amt);
+          this.setState({ money: money });
+          YGA.save({ money: money }, true);
+          this.flash('운영자 지급 +' + fmt(amt) + '원이 들어왔어요!', false);
+        }).catch((e) => console.error('grant', e));
+      });
+    }, (e) => console.error('grants listen', e));
   }
 
   netGone() {
@@ -930,7 +984,9 @@ class Component extends DCLogic {
   }
 
   say(text) {
-    const t = (text || '').trim().slice(0, 40);
+    const raw = (text || '').trim();
+    if (raw.charAt(0) === '/') { this.setState({ chatText: '' }); this.adminCmd(raw); return; }
+    const t = raw.slice(0, 40);
     if (!t) return;
     const log = this.state.log.concat([{ who: '나', text: t }]).slice(-3);
     this.setState({ myBubble: t, chatText: '', log: log });
