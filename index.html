@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#1f1d1a">
+<title>여기야</title>
+<meta property="og:title" content="여기야 — 지금 여기 있는 사람들과 만나요">
+<meta property="og:description" content="부산·대구·대전·서울 거리를 걸으며 실시간으로 만나는 캐릭터 채팅 게임">
+<meta property="og:image" content="assets/470f35cce6d7dfd1142963840e013c18.png">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Jua&amp;family=Noto+Sans+KR:wght@400;500;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#fbf7ef}
+a{color:#23756b}a:hover{color:#1a5a52}
+button{font-family:inherit;cursor:pointer}
+input{font-family:inherit}
+@keyframes yg-idle{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+.yg-idle{animation:yg-idle 2.4s ease-in-out infinite}
+@keyframes yg-walk{0%,100%{transform:translateY(0)}25%{transform:translateY(-8px)}50%{transform:translateY(0)}75%{transform:translateY(-8px)}}
+.yg-walk{animation:yg-walk 0.45s ease-in-out 1}
+</style>
+
+<style>
+html,body{margin:0;height:100%;overflow:hidden;background:#1f1d1a;-webkit-tap-highlight-color:transparent;overscroll-behavior:none}
+#yg-frame{position:fixed;left:0;top:0;width:390px;height:844px;transform-origin:0 0;overflow:hidden;background:#fbf7ef}
+#yg-online{position:absolute;left:50%;top:70px;transform:translateX(-50%);white-space:nowrap;z-index:99999;pointer-events:none;font:700 11px 'Noto Sans KR',sans-serif;padding:4px 9px;border-radius:999px;color:#fff;background:rgba(43,42,38,.72)}
+#yg-online.on::before{content:'';display:inline-block;width:7px;height:7px;border-radius:50%;background:#5fe08a;margin-right:5px;vertical-align:1px}
+#yg-online.off::before{content:'';display:inline-block;width:7px;height:7px;border-radius:50%;background:#e0a21b;margin-right:5px;vertical-align:1px}
+#yg-ban{position:absolute;inset:0;z-index:100000;display:none;flex-direction:column;align-items:center;justify-content:center;gap:10px;background:rgba(20,18,16,.92);color:#fff;font-family:'Noto Sans KR',sans-serif;text-align:center;padding:24px;box-sizing:border-box}
+</style>
+
+</head>
+<body>
+<div id="yg-frame"><div id="yg-root"></div></div>
+<script src="lib/preact.min.js"></script>
+<script src="lib/mqtt.min.js"></script>
+<script src="lib/runtime.js"></script>
+<script>
+function TPL(v) { return h(F, null, h(F, null, h("div", {"style": "width: 390px; height: 844px; box-sizing: border-box; background: #fbf7ef; font-family: 'Noto Sans KR', sans-serif; color: #2b2a26; display: flex; flex-direction: column; overflow: hidden"}, h("header", {"style": "height: 60px; padding: 8px 12px 0; display: flex; align-items: center; justify-content: center"}, h("h1", {"style": "margin: 0; font-family: 'Jua', sans-serif; font-weight: 400; font-size: 22px"}, "캐릭터 선택")), h("section", {"style": "margin: 4px 16px 0; height: 400px; border-radius: 28px; background: #a9d6f7; position: relative; overflow: hidden"}, h("svg", {"viewBox": "0 0 358 400", "width": "358", "height": "400", "aria-hidden": "true", "style": "position: absolute; left: 0; top: 0"}, h("rect", {"x": "0", "y": "0", "width": "358", "height": "400", "style": "fill: #a9d6f7"}), h("ellipse", {"cx": "62", "cy": "70", "rx": "30", "ry": "11", "style": "fill: #ffffff"}), h("ellipse", {"cx": "84", "cy": "62", "rx": "20", "ry": "11", "style": "fill: #ffffff"}), h("ellipse", {"cx": "292", "cy": "120", "rx": "24", "ry": "9", "style": "fill: #ffffff; opacity: 0.85"}), h("ellipse", {"cx": "60", "cy": "400", "rx": "200", "ry": "62", "style": "fill: #b9e19e"}), h("ellipse", {"cx": "320", "cy": "408", "rx": "180", "ry": "70", "style": "fill: #a7d68b"})), h("div", {"style": ("position: absolute; left: "+S(v.posLeft)+"; bottom: "+S(v.posBottom)+"; margin-left: -130px; width: 260px; height: 330px; transition: left 0.14s linear, bottom 0.14s linear")}, h("div", {"style": "position: absolute; left: 65px; bottom: 0; width: 130px; height: 13px; margin-bottom: -6px; border-radius: 50%; background: rgba(40,90,140,0.22)"}), h("div", {"class": v.motion, "style": "position: absolute; left: 0; bottom: 0; width: 260px; height: 330px"}, h("img", {"src": v.fr?.s, "alt": v.spriteAlt, "style": ("position: absolute; bottom: 0; left: "+S(v.imgLeft)+"; height: "+S(v.imgH)+"; width: auto; max-width: none; display: block")}))), h("div", {"style": "position: absolute; right: 10px; bottom: 10px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 3px; width: 141px"}, h("span", {}), h("button", {"onClick": v.tapUp, "onPointerDown": v.holdUp, "onPointerUp": v.release, "onPointerLeave": v.release, "onPointerCancel": v.release, "aria-label": "위로 이동", "style": "height: 44px; border: none; border-radius: 14px; touch-action: none; user-select: none; -webkit-user-select: none; background: rgba(255,255,255,0.88); display: flex; align-items: center; justify-content: center; color: #2b2a26"}, h("svg", {"width": "20", "height": "20", "viewBox": "0 0 24 24", "aria-hidden": "true", "style": "fill: none; stroke: currentColor; stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round"}, h("path", {"d": "M6 15l6-6 6 6"}))), h("span", {}), h("button", {"onClick": v.tapLeft, "onPointerDown": v.holdLeft, "onPointerUp": v.release, "onPointerLeave": v.release, "onPointerCancel": v.release, "aria-label": "왼쪽으로 이동", "style": "height: 44px; border: none; border-radius: 14px; touch-action: none; user-select: none; -webkit-user-select: none; background: rgba(255,255,255,0.88); display: flex; align-items: center; justify-content: center; color: #2b2a26"}, h("svg", {"width": "20", "height": "20", "viewBox": "0 0 24 24", "aria-hidden": "true", "style": "fill: none; stroke: currentColor; stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round"}, h("path", {"d": "M15 6l-6 6 6 6"}))), h("button", {"onClick": v.tapDown, "onPointerDown": v.holdDown, "onPointerUp": v.release, "onPointerLeave": v.release, "onPointerCancel": v.release, "aria-label": "아래로 이동", "style": "height: 44px; border: none; border-radius: 14px; touch-action: none; user-select: none; -webkit-user-select: none; background: rgba(255,255,255,0.88); display: flex; align-items: center; justify-content: center; color: #2b2a26"}, h("svg", {"width": "20", "height": "20", "viewBox": "0 0 24 24", "aria-hidden": "true", "style": "fill: none; stroke: currentColor; stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round"}, h("path", {"d": "M6 9l6 6 6-6"}))), h("button", {"onClick": v.tapRight, "onPointerDown": v.holdRight, "onPointerUp": v.release, "onPointerLeave": v.release, "onPointerCancel": v.release, "aria-label": "오른쪽으로 이동", "style": "height: 44px; border: none; border-radius: 14px; touch-action: none; user-select: none; -webkit-user-select: none; background: rgba(255,255,255,0.88); display: flex; align-items: center; justify-content: center; color: #2b2a26"}, h("svg", {"width": "20", "height": "20", "viewBox": "0 0 24 24", "aria-hidden": "true", "style": "fill: none; stroke: currentColor; stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round"}, h("path", {"d": "M9 6l6 6-6 6"}))))), h("div", {"style": "margin: 18px 16px 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px"}, h("button", {"onClick": v.pickMale, "aria-pressed": v.isMaleStr, "style": ("height: 76px; border-radius: 18px; background: "+S(v.maleBg)+"; border: 2px solid "+S(v.maleBorder)+"; display: flex; align-items: center; justify-content: center; gap: 10px; overflow: hidden; font-family: 'Jua', sans-serif; font-size: 20px; color: #2b2a26")}, h("span", {"style": "width: 52px; height: 60px; overflow: hidden; display: block; position: relative"}, h("img", {"src": v.maleImg, "alt": "", "style": "position: absolute; left: 50%; top: 0; width: 64px; margin-left: -32px; display: block"})), "남자"), h("button", {"onClick": v.pickFemale, "aria-pressed": v.isFemaleStr, "style": ("height: 76px; border-radius: 18px; background: "+S(v.femaleBg)+"; border: 2px solid "+S(v.femaleBorder)+"; display: flex; align-items: center; justify-content: center; gap: 10px; overflow: hidden; font-family: 'Jua', sans-serif; font-size: 20px; color: #2b2a26")}, h("span", {"style": "width: 52px; height: 60px; overflow: hidden; display: block; position: relative"}, h("img", {"src": v.femaleImg, "alt": "", "style": "position: absolute; left: 50%; top: 0; width: 62px; margin-left: -31px; display: block"})), "여자")), h("div", {"style": "margin: 16px 16px 0; display: flex; flex-direction: column; gap: 6px"}, h("label", {"for": "nick", "style": "font-size: 13px; font-weight: 700; color: #5d5a52"}, "닉네임"), h("input", {"id": "nick", "type": "text", "maxlength": "10", "placeholder": "2~10자", "style": "height: 50px; box-sizing: border-box; padding: 0 16px; border-radius: 16px; border: 2px solid #e4ddce; background: #ffffff; font-size: 16px; color: #2b2a26"})), h("p", {"style": "margin: 14px 16px 0; font-size: 13px; color: #5d5a52; line-height: 1.6; text-align: center"}, "모두 같은 기본 모습으로 시작해요.", h("br", {}), "노동 활동으로 머니를 벌어 옷과 아이템을 사서 꾸며보세요."), h("div", {"style": "margin-top: auto; padding: 12px 16px 28px"}, h("a", {"href": "game.html", "onClick": v.start, "style": ("width: 100%; height: 56px; border-radius: 18px; background: "+S(v.accent)+"; font-family: 'Jua', sans-serif; font-size: 20px; color: #ffffff; display: flex; align-items: center; justify-content: center; text-decoration: none")}, "여기야 시작하기"))))); }
+
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { gender: 'male', facing: 'front', x: 0, y: 0, walking: false, frame: 0 };
+    this.iv = null; this.to = null; this.pressed = false; this.usedPointer = false;
+  }
+
+  componentWillUnmount() { this.stopTimers(); }
+
+  stopTimers() {
+    if (this.iv) { clearInterval(this.iv); this.iv = null; }
+    if (this.to) { clearTimeout(this.to); this.to = null; }
+  }
+
+  turn(facing) {
+    if (this.state.facing !== facing) this.setState({ facing: facing });
+  }
+
+  walkLoop(facing) {
+    const V = { front: [0, -5], back: [0, 5], left: [-9, 0], right: [9, 0] }[facing];
+    if (this.iv) clearInterval(this.iv);
+    this.setState({ facing: facing, walking: true, frame: 0 });
+    this.iv = setInterval(() => {
+      const x = Math.max(-75, Math.min(45, this.state.x + V[0]));
+      const y = Math.max(0, Math.min(60, this.state.y + V[1]));
+      this.setState({ x: x, y: y, frame: this.state.frame + 1 });
+    }, 140);
+  }
+
+  press(facing) {
+    this.pressed = true;
+    this.stopTimers();
+    this.setState({ facing: facing, walking: false, frame: 0 });
+    this.to = setTimeout(() => { this.to = null; if (this.pressed) this.walkLoop(facing); }, 200);
+  }
+
+  lift() {
+    if (!this.pressed) return;
+    this.pressed = false;
+    this.stopTimers();
+    if (this.state.walking) this.setState({ walking: false, frame: 0 });
+  }
+
+  step(facing) {
+    this.stopTimers();
+    this.walkLoop(facing);
+    this.to = setTimeout(() => { this.stopTimers(); this.setState({ walking: false, frame: 0 }); }, 560);
+  }
+
+  renderVals() {
+    const accent = this.props.accent ?? '#23756b';
+    const isMale = this.state.gender === 'male';
+    const FR = {"female": {"front": {"stand": {"s": "assets/4210bfc2057d06282024c8de4464efe4.png", "h": 1130, "c": 225.3}, "walk": [{"s": "assets/40c198de8a6ef198dcbc384e2484645b.png", "h": 1129, "c": 238.7}, {"s": "assets/4210bfc2057d06282024c8de4464efe4.png", "h": 1130, "c": 225.3}, {"s": "assets/b48d253edec9db5767966acfaf34654b.png", "h": 1152, "c": 233.3}, {"s": "assets/4210bfc2057d06282024c8de4464efe4.png", "h": 1130, "c": 225.3}]}, "back": {"stand": {"s": "assets/748504c270c5bb2bcf919af0c01fefb9.png", "h": 1130, "c": 217.2}, "walk": [{"s": "assets/578a7718a010dbbe53107b6770cf07ee.png", "h": 1115, "c": 218.6}, {"s": "assets/748504c270c5bb2bcf919af0c01fefb9.png", "h": 1130, "c": 217.2}, {"s": "assets/51961fa83ca6b95e6fb5e7a25d6c5183.png", "h": 1101, "c": 213.0}, {"s": "assets/748504c270c5bb2bcf919af0c01fefb9.png", "h": 1130, "c": 217.2}]}, "left": {"stand": {"s": "assets/863d1a90e2b344432fbc3dbbf7016906.png", "h": 1130, "c": 205.2}, "walk": [{"s": "assets/b900a6ab75b31c3ddd8291ee720496e5.png", "h": 1092, "c": 274.7}, {"s": "assets/863d1a90e2b344432fbc3dbbf7016906.png", "h": 1130, "c": 205.2}, {"s": "assets/e525b1531ed757783dd46746a87e135a.png", "h": 1092, "c": 280.7}, {"s": "assets/863d1a90e2b344432fbc3dbbf7016906.png", "h": 1130, "c": 205.2}]}, "right": {"stand": {"s": "assets/e2bc07159a3883ed072ed086e325673c.png", "h": 1130, "c": 214.9}, "walk": [{"s": "assets/4a3bd46580d64a9f0b65e634e9650c50.png", "h": 1082, "c": 260.2}, {"s": "assets/5d8a2efd0e1f6e4c3c45c036ab9dd660.png", "h": 1101, "c": 235.9}, {"s": "assets/64caf3bae8736f88cb82ac520bbfda30.png", "h": 1111, "c": 275.4}, {"s": "assets/5d8a2efd0e1f6e4c3c45c036ab9dd660.png", "h": 1101, "c": 235.9}]}}, "male": {"front": {"stand": {"s": "assets/470f35cce6d7dfd1142963840e013c18.png", "h": 1130, "c": 235.2}, "walk": [{"s": "assets/685f3ea2b298a310185796a2db0acf15.png", "h": 1149, "c": 249.2}, {"s": "assets/470f35cce6d7dfd1142963840e013c18.png", "h": 1130, "c": 235.2}, {"s": "assets/7f6e8883a88e5e8e9db0b00f34e914d5.png", "h": 1142, "c": 237.5}, {"s": "assets/470f35cce6d7dfd1142963840e013c18.png", "h": 1130, "c": 235.2}]}, "back": {"stand": {"s": "assets/5d08a44994be9caad05622bb4e3bff31.png", "h": 1130, "c": 230.8}, "walk": [{"s": "assets/f7723606381f2097fb0e5da06d633f53.png", "h": 1122, "c": 227.7}, {"s": "assets/5d08a44994be9caad05622bb4e3bff31.png", "h": 1130, "c": 230.8}]}, "left": {"stand": {"s": "assets/4fb58fc70346eb54502a5bc4761c12fa.png", "h": 1130, "c": 239.0}, "walk": [{"s": "assets/d60f92b2e46776070c56ba0047a9e50b.png", "h": 1112, "c": 266.9}, {"s": "assets/a24ac1f468426d29059441fb1ff58d0f.png", "h": 1110, "c": 245.3}, {"s": "assets/1d11384822fd5c525b28c5d49102e956.png", "h": 1101, "c": 270.7}, {"s": "assets/a24ac1f468426d29059441fb1ff58d0f.png", "h": 1110, "c": 245.3}]}, "right": {"stand": {"s": "assets/efaed9547ca7654cef8d544e0eb8543c.png", "h": 1130, "c": 236.2}, "walk": [{"s": "assets/b24f062e140460f58e9330960acd60d6.png", "h": 1133, "c": 291.9}, {"s": "assets/42b73bb13d774281cc903a4e9cbf712b.png", "h": 1158, "c": 246.2}, {"s": "assets/759cbb3ea6c5df35af6ed0711e0fcc5b.png", "h": 1119, "c": 271.2}, {"s": "assets/42b73bb13d774281cc903a4e9cbf712b.png", "h": 1158, "c": 246.2}]}}};
+    const g = isMale ? 'male' : 'female';
+    const f = this.state.facing;
+    const y = this.state.y;
+    const set = FR[g][f];
+    const fr = this.state.walking ? set.walk[this.state.frame % set.walk.length] : set.stand;
+    const disp = 300 - y * 0.9;
+    const k = disp / 1130;
+    const hold = (dir) => () => { this.usedPointer = true; this.press(dir); };
+    const tap = (dir) => () => {
+      if (this.usedPointer) { this.usedPointer = false; return; }
+      if (this.state.facing !== dir) this.turn(dir); else this.step(dir);
+    };
+    const SP = { male: { front: FR.male.front.stand.s }, female: { front: FR.female.front.stand.s } };
+    return {
+      accent,
+      fr: fr,
+      imgH: Math.round(fr.h * k) + 'px',
+      imgLeft: Math.round(130 - fr.c * k) + 'px',
+      spriteAlt: (isMale ? '기본 남자 캐릭터 ' : '기본 여자 캐릭터 ') + { front: '앞모습', left: '왼쪽 옆모습', right: '오른쪽 옆모습', back: '뒷모습' }[f],
+      posLeft: 'calc(45% + ' + this.state.x + 'px)',
+      posBottom: (24 + y) + 'px',
+      motion: this.state.walking ? '' : 'yg-idle',
+      holdUp: hold('back'), holdDown: hold('front'), holdLeft: hold('left'), holdRight: hold('right'),
+      tapUp: tap('back'), tapDown: tap('front'), tapLeft: tap('left'), tapRight: tap('right'),
+      release: () => this.lift(),
+      maleImg: SP.male.front, femaleImg: SP.female.front,
+      isMaleStr: isMale ? 'true' : 'false', isFemaleStr: isMale ? 'false' : 'true',
+      maleBg: isMale ? '#e6f3f0' : '#ffffff', maleBorder: isMale ? accent : '#e4ddce',
+      femaleBg: !isMale ? '#e6f3f0' : '#ffffff', femaleBorder: !isMale ? accent : '#e4ddce',
+      start: () => { const el = document.getElementById('nick'); const nick = ((el && el.value) || '').trim().slice(0, 10); YG.save('me', { gender: this.state.gender, nick: nick }); },
+      pickMale: () => this.setState({ gender: 'male' }),
+      pickFemale: () => this.setState({ gender: 'female' })
+    };
+  }
+}
+
+fitFrame(document.getElementById('yg-frame'));
+mountDC(Component, document.getElementById('yg-root'));
+(function(){ const me = YG.load('me', null); const s = YG.load('state', null);
+  const nick = (me && me.nick) || (s && s.prof && s.prof.nick) || '';
+  const el = document.getElementById('nick'); if (el && nick) el.value = nick;
+  if (me && me.gender) window.__dc.setState({ gender: me.gender }); })();
+</script>
+</body>
+</html>

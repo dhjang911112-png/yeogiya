@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>여기야 관리자</title>
+<style>
+:root{--bg:#fbf7ef;--fg:#2b2a26;--card:#fff;--line:#e4ddce;--accent:#b5532f}
+@media (prefers-color-scheme: dark){:root{--bg:#1f1d1a;--fg:#f1ece2;--card:#2b2925;--line:#3d3a35}}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:'Noto Sans KR',system-ui,sans-serif;padding:16px}
+h1{font-size:20px;margin:0 0 4px}.sub{opacity:.7;font-size:13px;margin-bottom:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:10px}
+.top{display:flex;justify-content:space-between;align-items:center;gap:8px}.n{font-weight:700;color:var(--accent)}
+ul{margin:8px 0 0;padding-left:18px;font-size:13px;line-height:1.7}
+.ban{display:inline-block;font-size:11px;font-weight:700;color:#fff;background:var(--accent);border-radius:999px;padding:2px 8px;margin-left:6px}
+</style></head><body>
+<h1>여기야 신고 관리</h1><div class="sub" id="st">서버 연결 중...</div><div id="list"></div>
+<script src="lib/preact.min.js"></script>
+<script src="lib/mqtt.min.js"></script>
+<script src="lib/runtime.js"></script>
+<script>
+const R = {};
+const esc = (s) => String(s == null ? '' : s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+function draw() {
+  const ids = Object.keys(R).sort((a, b) => Object.keys(R[b]).length - Object.keys(R[a]).length);
+  document.getElementById('list').innerHTML = ids.length ? ids.map((id) => {
+    const rs = Object.values(R[id]).sort((a, b) => b.at - a.at), n = rs.length;
+    return '<div class="card"><div class="top"><b>' + esc(rs[0].targetName) + (n >= 10 ? '<span class="ban">자동 정지</span>' : '') + '</b><span class="n">신고 ' + n + '회</span></div><ul>' +
+      rs.map((r) => '<li>' + esc(r.reason) + ' · ' + esc(r.fromName) + ' · ' + new Date(r.at).toLocaleString('ko-KR') + '</li>').join('') + '</ul></div>';
+  }).join('') : '<div class="card">아직 들어온 신고가 없어요</div>';
+}
+draw();
+const c = YG.connect();
+c.on('connect', () => { document.getElementById('st').textContent = '실시간 연결됨 · 새 신고가 들어오면 바로 보여요'; c.subscribe(YG.P + 'admin/r/#'); });
+c.on('message', (t, b) => { const p = t.slice(YG.P.length).split('/'); let m; try { m = JSON.parse(b.toString()); } catch (e) { return; } if (!m) return; (R[p[2]] = R[p[2]] || {})[p[3]] = m; draw(); });
+</script></body></html>
