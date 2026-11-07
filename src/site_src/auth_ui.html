@@ -1,0 +1,44 @@
+<style>
+#yg-auth{position:absolute;inset:0;z-index:200000;display:none;flex-direction:column;background:#fbf7ef;font-family:'Noto Sans KR',sans-serif;color:#2b2a26;box-sizing:border-box;padding:0}
+#yg-auth .in{margin:0 24px;display:flex;flex-direction:column}
+#yg-auth .logo{margin:72px 0 6px;text-align:center;font-family:'Jua',sans-serif;font-size:46px;color:#23756b}
+#yg-auth .tag{text-align:center;font-size:14px;color:#8a857a;margin-bottom:30px}
+#yg-auth .tabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:5px;border-radius:16px;background:#efe9dd;margin-bottom:20px}
+#yg-auth .tabs button{height:44px;border:none;border-radius:12px;background:transparent;font:700 15px 'Noto Sans KR',sans-serif;color:#8a857a;cursor:pointer}
+#yg-auth .tabs button[aria-selected="true"]{background:#fff;color:#2b2a26;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+#yg-auth form{display:flex;flex-direction:column;gap:12px}
+#yg-auth label{font-size:13px;font-weight:700;color:#5d594f;display:flex;flex-direction:column;gap:6px}
+#yg-auth input{width:100%;min-width:0;height:50px;box-sizing:border-box;padding:0 16px;border-radius:16px;border:2px solid #e4ddce;background:#fff;font:16px 'Noto Sans KR',sans-serif;color:#2b2a26;outline:none}
+#yg-auth input:focus{border-color:#23756b}
+#yg-auth .birth{display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:8px}
+#yg-auth .go{margin-top:8px;height:56px;border:none;border-radius:18px;background:#23756b;color:#fff;font:20px 'Jua',sans-serif;cursor:pointer}
+#yg-auth .go:disabled{background:#9fbfb9}
+#yg-auth .err{min-height:20px;font-size:13px;font-weight:700;color:#b5532f;text-align:center}
+#yg-auth .note{font-size:12px;color:#8a857a;text-align:center;line-height:1.6;margin-top:6px}
+#yg-auth .age{display:inline-block;margin-top:4px;padding:3px 9px;border-radius:999px;background:#b5532f;color:#fff;font-size:11px;font-weight:700}
+#yg-out{position:absolute;right:12px;top:16px;z-index:1000;display:none;height:32px;padding:0 12px;border-radius:999px;border:1px solid #e4ddce;background:#fff;font:700 12px 'Noto Sans KR',sans-serif;color:#5d594f;cursor:pointer}
+</style>
+<div id="yg-auth" role="dialog" aria-label="로그인 또는 회원가입"><div class="in">
+  <div class="logo">여기야</div>
+  <div class="tag">지금 여기 있는 사람들과 만나요<br><span class="age">19세 이상 이용가</span></div>
+  <div class="tabs" role="tablist">
+    <button type="button" id="yg-tab-login" role="tab" aria-selected="true">로그인</button>
+    <button type="button" id="yg-tab-join" role="tab" aria-selected="false">회원가입</button>
+  </div>
+  <form id="yg-form" novalidate>
+    <label>닉네임<input id="yg-a-nick" maxlength="10" autocomplete="username" placeholder="한글·영문·숫자 2~10자"></label>
+    <label>비밀번호<input id="yg-a-pw" type="password" autocomplete="current-password" placeholder="6자리 이상"></label>
+    <label id="yg-a-pw2-wrap" style="display:none">비밀번호 확인<input id="yg-a-pw2" type="password" autocomplete="new-password" placeholder="한 번 더 입력"></label>
+    <label id="yg-a-birth-wrap" style="display:none">생년월일
+      <span class="birth">
+        <input id="yg-a-y" inputmode="numeric" maxlength="4" placeholder="1995" aria-label="태어난 해">
+        <input id="yg-a-m" inputmode="numeric" maxlength="2" placeholder="월" aria-label="태어난 달">
+        <input id="yg-a-d" inputmode="numeric" maxlength="2" placeholder="일" aria-label="태어난 날">
+      </span>
+    </label>
+    <div class="err" id="yg-a-err" role="alert"></div>
+    <button class="go" id="yg-a-go" type="submit">로그인</button>
+    <div class="note" id="yg-a-note">청소년보호법에 따라 만 19세 미만은 이용할 수 없어요.<br>닉네임은 가입 후 바꿀 수 없어요.</div>
+  </form>
+</div></div>
+<button type="button" id="yg-out">로그아웃</button>

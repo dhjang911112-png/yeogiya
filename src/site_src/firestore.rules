@@ -1,0 +1,48 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isAdmin() {
+      return request.auth != null && request.auth.token.email == 'uec9ab4ec9881ec9e90@yeogiya.app';
+    }
+
+    match /grants/{gid} {
+      allow read: if request.auth != null
+        && (isAdmin() || resource.data.toKey == request.auth.token.email);
+      allow create: if isAdmin()
+        && request.resource.data.amount is int
+        && request.resource.data.amount > 0
+        && request.resource.data.amount <= 100000000
+        && request.resource.data.toKey is string
+        && request.resource.data.claimed == false;
+      allow update: if request.auth != null
+        && resource.data.toKey == request.auth.token.email
+        && resource.data.claimed == false
+        && request.resource.data.claimed == true
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['claimed', 'claimedAt']);
+      allow delete: if false;
+    }
+
+    match /users/{uid} {
+      allow read: if request.auth != null && request.auth.uid == uid;
+
+      allow create: if request.auth != null && request.auth.uid == uid
+        && request.resource.data.nick is string
+        && request.resource.data.nick.size() >= 2 && request.resource.data.nick.size() <= 10
+        && request.resource.data.birth is string
+        && request.resource.data.birth.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
+        && int(request.resource.data.birth[0:4]) <= request.time.year() - 19
+        && request.resource.data.money == 5000
+        && request.resource.data.banned == false;
+
+      allow update: if request.auth != null && request.auth.uid == uid
+        && request.resource.data.nick == resource.data.nick
+        && request.resource.data.birth == resource.data.birth
+        && (resource.data.banned == false || request.resource.data.banned == true)
+        && request.resource.data.money is number
+        && request.resource.data.money >= 0
+        && request.resource.data.money <= 100000000;
+
+      allow delete: if false;
+    }
+  }
+}

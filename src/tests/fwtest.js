@@ -1,0 +1,25 @@
+const { chromium } = require('playwright');
+(async () => { const b = await chromium.launch();
+ const mk = async (nick) => { const cx = await b.newContext({ viewport: { width: 390, height: 844 } }); await cx.route('**/lib/firebase-config.js', r => r.fulfill({ body: 'window.YG_FIREBASE=null', contentType: 'text/javascript' }));
+   const p = await cx.newPage(); p.on('pageerror', e => console.log(nick, 'ERR', e.message));
+   await p.goto('http://localhost:8080/index.html'); await p.fill('#nick', nick); await p.click('text=여기야 시작하기'); await p.waitForURL('**/game.html');
+   await p.goto('http://localhost:8080/game.html?broker=ws://localhost:8883'); await p.waitForTimeout(1800); return [p, cx]; };
+ const [A] = await mk('덕환'); const [C, cC] = await mk('지은'); await A.waitForTimeout(1500);
+ const cid = await C.evaluate(() => __dc.myId);
+ await A.evaluate((id) => { __dc.setState({ sheet: { type: 'menu', id } }); __dc.renderVals().addFriend(); __dc.setState({ sheet: null }); }, cid);
+ await A.evaluate(() => __dc.setState({ tab: 'me' })); await A.waitForTimeout(300);
+ await A.screenshot({ path: 'friends_on.png' });
+ // fireworks: shop then command
+ await A.evaluate(() => __dc.setState({ tab: 'shop', cat: 'item' })); await A.waitForTimeout(200);
+ await A.screenshot({ path: 'shop_fw.png' });
+ await A.click('text=구매'); await A.waitForTimeout(200);
+ console.log('fireworks/money:', await A.evaluate(() => [__dc.state.fireworks, __dc.state.money]));
+ await A.evaluate(() => __dc.setState({ tab: 'map' })); await A.waitForTimeout(300);
+ await A.fill('#chat', '/폭죽'); await A.press('#chat', 'Enter');
+ await C.waitForTimeout(1300); await C.screenshot({ path: 'fw_c1.png' }); await C.waitForTimeout(700); await C.screenshot({ path: 'fw_c2.png' });
+ console.log('A left:', await A.evaluate(() => __dc.state.fireworks), 'C log:', await C.evaluate(() => __dc.state.log.map(l => l.text).slice(-1)));
+ await A.fill('#chat', '/폭죽'); await A.press('#chat', 'Enter'); await A.waitForTimeout(200);
+ console.log('no-stock toast:', await A.evaluate(() => __dc.state.toast));
+ await cC.close(); await A.waitForTimeout(10500);
+ await A.evaluate(() => __dc.setState({ tab: 'me' })); await A.waitForTimeout(300); await A.screenshot({ path: 'friends_off.png' });
+ await b.close(); })();
