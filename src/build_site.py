@@ -1,4 +1,5 @@
 import re, os, json, shutil, sys
+from PIL import Image
 sys.path.insert(0, os.path.dirname(__file__))
 from dc2preact import convert
 
@@ -21,6 +22,13 @@ shutil.copy(NM + 'mqtt/dist/mqtt.min.js', OUT + 'lib/mqtt.min.js')
 shutil.copy(B + '/site_src/runtime.js', OUT + 'lib/runtime.js')
 shutil.copy(B + '/site_src/account.js', OUT + 'lib/account.js')
 shutil.copy(B + '/site_src/fx.js', OUT + 'lib/fx.js')
+shutil.copy(B + '/site_src/avatar.js', OUT + 'lib/avatar.js')
+import subprocess
+subprocess.run([sys.executable, B + '/gen_manifest.py', B + '/art/avatar', OUT + 'assets/avatar'], check=True)
+for _g in ['male', 'female']:
+    _h = Image.open(OUT + 'assets/avatar/base/%s_base/front/head.png' % _g)
+    _h.resize((160, round(160 * _h.size[1] / _h.size[0])), Image.LANCZOS).save(OUT + 'assets/avatar/base/%s_base/portrait.png' % _g, optimize=True)
+shutil.copy(B + '/site_src/avatar-lab.html', OUT + 'avatar-lab.html')
 for f in ['firebase-app-compat.js', 'firebase-auth-compat.js', 'firebase-firestore-compat.js']:
     shutil.copy(NM + 'firebase/' + f, OUT + 'lib/' + f)
 if not os.path.exists(OUT + 'lib/firebase-config.js'):
@@ -100,6 +108,7 @@ html{{--yg-w:390px;--yg-h:844px}}
 <script src="lib/firebase-config.js"></script>
 <script src="lib/account.js"></script>
 <script src="lib/fx.js"></script>
+<script src="lib/avatar.js"></script>
 <script>
 {tpl_fn}
 {cls}
@@ -127,11 +136,31 @@ js = rep(js, "      pickMale: () => this.setState({ gender: 'male' }),",
         YG.save('me', { gender: this.state.gender, nick: nick });
       },
       pickMale: () => this.setState({ gender: 'male' }),""")
+exec(open(B + '/avatar_main_patch.py').read())
 head, fn = convert(blob(xdc))
 boot_main = '''(function(){ const me = YG.load('me', null); const s = YG.load('state', null);
   const nick = (me && me.nick) || (s && s.prof && s.prof.nick) || '';
   const el = document.getElementById('nick'); if (el && nick) el.value = nick;
-  if (me && me.gender) window.__dc.setState({ gender: me.gender }); })();'''
+  if (me && me.gender) window.__dc.setState({ gender: me.gender }); })();
+(function () {
+  const AV = window.YGAvatar; if (!AV) return;
+  const an = new AV.Animator(); let last = performance.now(); let demo = false;
+  document.addEventListener('click', (e) => { if (e.target && e.target.id === 'yg-av-prev') demo = !demo; });
+  AV.load().then(() => {
+    const loop = (t) => {
+      requestAnimationFrame(loop);
+      const dt = Math.min(0.05, (t - last) / 1000); last = t;
+      const el = document.getElementById('yg-av-prev'); if (!el) return;
+      const S = el.height / 1040;
+      const a = an.update(dt, demo ? 128 * dt * 0.6 : 0, S * 0.5, demo, 'front');
+      const g = (window.__dc && window.__dc.state.gender) === 'female' ? 'female_base' : 'male_base';
+      const c = el.getContext('2d'); c.setTransform(1, 0, 0, 1, 0, 0); c.clearRect(0, 0, el.width, el.height);
+      c.translate(el.width / 2 - 256 * S, el.height - 1000 * S - 8);
+      AV.draw(c, { body: g, dir: 'front', equip: {} }, a, { scale: S });
+    };
+    requestAnimationFrame(loop);
+  });
+})();'''
 open(OUT + 'index.html', 'w').write(page('여기야', head, fn, blob(js), boot=boot_main + '\n' + open(B + '/site_src/auth_ui.js').read(), extra_body=open(B + '/site_src/auth_ui.html').read()))
 
 # ---------------- Game ----------------

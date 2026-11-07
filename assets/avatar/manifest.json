@@ -1,0 +1,310 @@
+{
+ "version": 2,
+ "canvas": [
+  512,
+  1024
+ ],
+ "footY": 1000,
+ "drawOrder": {
+  "front": [
+   "legL",
+   "legR",
+   "torso",
+   "armL",
+   "armR",
+   "head"
+  ],
+  "back": [
+   "head",
+   "armL",
+   "armR",
+   "legL",
+   "legR",
+   "torso"
+  ],
+  "left": [
+   "armR",
+   "legR",
+   "torso",
+   "legL",
+   "head",
+   "armL"
+  ],
+  "right": [
+   "armL",
+   "legL",
+   "torso",
+   "legR",
+   "head",
+   "armR"
+  ]
+ },
+ "bodies": {
+  "female_base": {
+   "gender": "female",
+   "directions": {
+    "front": {
+     "parts": {
+      "armL": {
+       "src": "assets/avatar/base/female_base/front/armL.png",
+       "x": 74,
+       "y": 395,
+       "w": 110,
+       "h": 295,
+       "pivot": [
+        163,
+        413
+       ]
+      },
+      "armR": {
+       "src": "assets/avatar/base/female_base/front/armR.png",
+       "x": 335,
+       "y": 395,
+       "w": 106,
+       "h": 295,
+       "pivot": [
+        354,
+        413
+       ]
+      },
+      "head": {
+       "src": "assets/avatar/base/female_base/front/head.png",
+       "x": 71,
+       "y": 56,
+       "w": 369,
+       "h": 306,
+       "pivot": [
+        259,
+        362
+       ]
+      },
+      "legL": {
+       "src": "assets/avatar/base/female_base/front/legL.png",
+       "x": 124,
+       "y": 634,
+       "w": 132,
+       "h": 366,
+       "pivot": [
+        197,
+        634
+       ]
+      },
+      "legR": {
+       "src": "assets/avatar/base/female_base/front/legR.png",
+       "x": 263,
+       "y": 634,
+       "w": 143,
+       "h": 366,
+       "pivot": [
+        320,
+        634
+       ]
+      },
+      "torso": {
+       "src": "assets/avatar/base/female_base/front/torso.png",
+       "x": 153,
+       "y": 362,
+       "w": 213,
+       "h": 284,
+       "pivot": [
+        263,
+        634
+       ]
+      }
+     },
+     "joints": {
+      "neck": [
+       259,
+       362
+      ],
+      "shoulderL": [
+       163,
+       413
+      ],
+      "handL": [
+       108,
+       659
+      ],
+      "shoulderR": [
+       354,
+       413
+      ],
+      "handR": [
+       407,
+       659
+      ],
+      "hipL": [
+       197,
+       634
+      ],
+      "ankleL": [
+       179,
+       925
+      ],
+      "kneeL": [
+       188,
+       779
+      ],
+      "hipR": [
+       320,
+       634
+      ],
+      "ankleR": [
+       348,
+       925
+      ],
+      "kneeR": [
+       334,
+       779
+      ],
+      "root": [
+       263,
+       1000
+      ]
+     }
+    }
+   },
+   "missing": [
+    "back 방향 기본 바디",
+    "left 방향 기본 바디",
+    "right 방향 기본 바디",
+    "머리카락 없는 머리(헤어 분리)",
+    "가려진 부분 보완(겨드랑이·속옷 안 허벅지·턱 아래 목)"
+   ]
+  },
+  "male_base": {
+   "gender": "male",
+   "directions": {
+    "front": {
+     "parts": {
+      "armL": {
+       "src": "assets/avatar/base/male_base/front/armL.png",
+       "x": 72,
+       "y": 445,
+       "w": 109,
+       "h": 280,
+       "pivot": [
+        160,
+        463
+       ]
+      },
+      "armR": {
+       "src": "assets/avatar/base/male_base/front/armR.png",
+       "x": 333,
+       "y": 445,
+       "w": 107,
+       "h": 280,
+       "pivot": [
+        351,
+        463
+       ]
+      },
+      "head": {
+       "src": "assets/avatar/base/male_base/front/head.png",
+       "x": 59,
+       "y": 40,
+       "w": 393,
+       "h": 388,
+       "pivot": [
+        256,
+        428
+       ]
+      },
+      "legL": {
+       "src": "assets/avatar/base/male_base/front/legL.png",
+       "x": 91,
+       "y": 717,
+       "w": 160,
+       "h": 283,
+       "pivot": [
+        203,
+        717
+       ]
+      },
+      "legR": {
+       "src": "assets/avatar/base/male_base/front/legR.png",
+       "x": 263,
+       "y": 717,
+       "w": 159,
+       "h": 283,
+       "pivot": [
+        308,
+        717
+       ]
+      },
+      "torso": {
+       "src": "assets/avatar/base/male_base/front/torso.png",
+       "x": 158,
+       "y": 428,
+       "w": 197,
+       "h": 294,
+       "pivot": [
+        256,
+        717
+       ]
+      }
+     },
+     "joints": {
+      "neck": [
+       256,
+       428
+      ],
+      "shoulderL": [
+       160,
+       463
+      ],
+      "handL": [
+       109,
+       694
+      ],
+      "shoulderR": [
+       351,
+       463
+      ],
+      "handR": [
+       401,
+       694
+      ],
+      "hipL": [
+       203,
+       717
+      ],
+      "ankleL": [
+       178,
+       925
+      ],
+      "kneeL": [
+       190,
+       821
+      ],
+      "hipR": [
+       308,
+       717
+      ],
+      "ankleR": [
+       334,
+       925
+      ],
+      "kneeR": [
+       321,
+       821
+      ],
+      "root": [
+       256,
+       1000
+      ]
+     }
+    }
+   },
+   "missing": [
+    "back 방향 기본 바디",
+    "left 방향 기본 바디",
+    "right 방향 기본 바디",
+    "머리카락 없는 머리(헤어 분리)",
+    "가려진 부분 보완(겨드랑이·속옷 안 허벅지·턱 아래 목)"
+   ]
+  }
+ },
+ "items": {},
+ "problems": []
+}

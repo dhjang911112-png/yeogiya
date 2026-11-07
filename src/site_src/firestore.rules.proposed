@@ -1,0 +1,63 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isAdmin() {
+      return request.auth != null && request.auth.token.email == 'uec9ab4ec9881ec9e90@yeogiya.app';
+    }
+
+    match /grants/{gid} {
+      allow read: if request.auth != null
+        && (isAdmin() || resource.data.toKey == request.auth.token.email);
+      allow create: if isAdmin()
+        && request.resource.data.amount is int
+        && request.resource.data.amount > 0
+        && request.resource.data.amount <= 100000000
+        && request.resource.data.toKey is string
+        && request.resource.data.claimed == false;
+      allow update: if request.auth != null
+        && resource.data.toKey == request.auth.token.email
+        && resource.data.claimed == false
+        && request.resource.data.claimed == true
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['claimed', 'claimedAt']);
+      allow delete: if false;
+    }
+
+    // ---- avatar v2: equipped slots must be items this account owns (base items are free) ----
+    function owns(d, id) {
+      return id == '' || id in ['hoodie', 'jeans', 'sneakers']
+        || (d.get('owned', {}).get(id, false) == true)
+        || (id in d.get('inv', []));
+    }
+    function validAvatar(d) {
+      let e = d.get('equipped', {});
+      return d.get('baseBody', 'male_base') in ['male_base', 'female_base']
+        && e.keys().hasOnly(['hair', 'top', 'bottom', 'shoes', 'outer', 'accessory'])
+        && owns(d, e.get('hair', '')) && owns(d, e.get('top', '')) && owns(d, e.get('bottom', ''))
+        && owns(d, e.get('shoes', '')) && owns(d, e.get('outer', '')) && owns(d, e.get('accessory', ''));
+    }
+
+    match /users/{uid} {
+      allow read: if request.auth != null && request.auth.uid == uid;
+
+      allow create: if request.auth != null && request.auth.uid == uid
+        && request.resource.data.nick is string
+        && request.resource.data.nick.size() >= 2 && request.resource.data.nick.size() <= 10
+        && request.resource.data.birth is string
+        && request.resource.data.birth.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
+        && int(request.resource.data.birth[0:4]) <= request.time.year() - 19
+        && request.resource.data.money == 5000
+        && request.resource.data.banned == false;
+
+      allow update: if request.auth != null && request.auth.uid == uid
+        && request.resource.data.nick == resource.data.nick
+        && request.resource.data.birth == resource.data.birth
+        && (resource.data.banned == false || request.resource.data.banned == true)
+        && request.resource.data.money is number
+        && request.resource.data.money >= 0
+        && request.resource.data.money <= 100000000
+        && validAvatar(request.resource.data);
+
+      allow delete: if false;
+    }
+  }
+}

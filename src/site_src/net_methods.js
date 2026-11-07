@@ -233,6 +233,22 @@
     }
   }
 
+  // avatar v2 look: base body + 6 slots. The game UI still edits the legacy eq, so derive from it each time.
+  avNow() {
+    const st = this.state;
+    const prev = st.equipped || {};
+    const a = YGAvatar.migrateProfile({ gender: st.gender, eq: st.eq });
+    a.equipped.accessory = prev.accessory || '';
+    return { b: a.baseBody, e: a.equipped };
+  }
+
+  avClean(av, g) {
+    const ok = (v) => (typeof v === 'string' && /^[a-z0-9_]{0,24}$/.test(v)) ? v : '';
+    const e = (av && av.e) || {};
+    return { b: av && (av.b === 'female_base' || av.b === 'male_base') ? av.b : (g === 'female' ? 'female_base' : 'male_base'),
+      e: { hair: ok(e.hair), top: ok(e.top), bottom: ok(e.bottom), shoes: ok(e.shoes), outer: ok(e.outer), accessory: ok(e.accessory) } };
+  }
+
   netGone() {
     try { if (this.cli && this.cli.connected) this.cli.publish(YG.P + 'p/' + this.myId, JSON.stringify({ id: this.myId, gone: 1 })); } catch (e) {}
   }
@@ -331,7 +347,7 @@
       const p = this.peers[id], r = this.rel[id] || {};
       U[id] = {
         name: clip(p.name, 12) || '손님', area: String(p.area || ''), barOf: String(p.barOf || ''), g: p.g === 'female' ? 'female' : 'male',
-        f: FS.indexOf(p.f) >= 0 ? p.f : 'front', x: Number(p.x) || 0, y: Number(p.y) || 0, w: !!p.w, dance: !!p.dance, hair: PREM[p.hr] && PREM[p.hr].cat === 'hair' ? p.hr : '', top: PREM[p.tp] && PREM[p.tp].cat === 'top' ? p.tp : '', inv: Array.isArray(p.inv) ? p.inv.filter((x) => PREM[x]).slice(0, INV_MAX) : [],
+        f: FS.indexOf(p.f) >= 0 ? p.f : 'front', x: Number(p.x) || 0, y: Number(p.y) || 0, w: !!p.w, dance: !!p.dance, hair: PREM[p.hr] && PREM[p.hr].cat === 'hair' ? p.hr : '', top: PREM[p.tp] && PREM[p.tp].cat === 'top' ? p.tp : '', inv: Array.isArray(p.inv) ? p.inv.filter((x) => PREM[x]).slice(0, INV_MAX) : [], av: this.avClean(p.av, p.g),
         like: Math.max(0, Number(p.like) || 0), flirted: !!r.flirted, friend: !!r.friend, reports: Math.max(0, Number(p.rp) || 0),
         reported: !!r.reported, banned: !!r.blocked, height: clip(p.h, 3), region: clip(p.rg, 12), pin: clip(p.pin, 30), bubble: clip(p.b, 40),
         seat: p.seat && typeof p.seat === 'object' ? { k: clip(p.seat.k, 60), since: Number(p.seat.since) || 0 } : null
@@ -363,7 +379,7 @@
     const p = {
       id: this.myId, name: this.myName(), g: st.gender, area: st.travel ? '' : st.area, barOf: this.myBarOf(),
       x: Math.round(st.px), y: Math.round(st.py), f: st.facing, w: st.walking ? 1 : 0, dance: st.dancing ? 1 : 0,
-      hr: (st.eq && st.eq.hair) || '', tp: (st.eq && PREM[st.eq.top]) ? st.eq.top : '', inv: (st.inv || []).slice(0, INV_MAX), b: st.myBubble || '', pin: st.share ? '여기야! ' + (zone || '') : '', like: st.myLike, rp: Object.keys(this.reportedBy || {}).length,
+      hr: (st.eq && st.eq.hair) || '', tp: (st.eq && PREM[st.eq.top]) ? st.eq.top : '', inv: (st.inv || []).slice(0, INV_MAX), av: this.avNow(), b: st.myBubble || '', pin: st.share ? '여기야! ' + (zone || '') : '', like: st.myLike, rp: Object.keys(this.reportedBy || {}).length,
       h: st.prof.pub.height ? String(st.prof.height || '') : '', rg: st.prof.pub.region ? String(st.prof.region || '') : '',
       seat: st.seated ? { k: this.roomKey(), since: this.seatSince || 0 } : null
     };
@@ -404,6 +420,7 @@
     const outside = st.area !== 'bar' && st.area !== 'club' && !st.travel;
     const o = outside ? { area: st.area, px: st.px, py: st.py } : (st.outPos ? { area: st.outPos.area, px: st.outPos.px, py: st.outPos.py + 10 } : {});
     const data = Object.assign({ money: st.money, owned: st.owned, eq: st.eq, prof: st.prof, myLike: st.myLike, gender: st.gender, share: st.share, energy: st.energy, fireworks: st.fireworks || 0, inv: st.inv || [] }, o);
+    { const av = this.avNow(); data.baseBody = av.b; data.equipped = av.e; }
     if (YG.acct && window.YGA) {
       data.prof = Object.assign({}, st.prof, { nick: YG.acct.nick });
       if (!force && Date.now() - (this.acctAt || 0) < 30000) return;

@@ -1,0 +1,53 @@
+{
+ "joints": {
+  "neck": [
+   256,
+   428
+  ],
+  "shoulderL": [
+   160,
+   463
+  ],
+  "handL": [
+   109,
+   694
+  ],
+  "shoulderR": [
+   351,
+   463
+  ],
+  "handR": [
+   401,
+   694
+  ],
+  "hipL": [
+   203,
+   717
+  ],
+  "ankleL": [
+   178,
+   925
+  ],
+  "kneeL": [
+   190,
+   821
+  ],
+  "hipR": [
+   308,
+   717
+  ],
+  "ankleR": [
+   334,
+   925
+  ],
+  "kneeR": [
+   321,
+   821
+  ],
+  "root": [
+   256,
+   1000
+  ]
+ },
+ "note": "512x1024 rig canvas coordinates. pivots: head=neck, torso=hip centre, armL/R=shoulderL/R, legL/R=hipL/R"
+}

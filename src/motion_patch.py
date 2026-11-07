@@ -40,3 +40,7 @@ for _g in _FR:
             _q['h'] = round(_q['h'] * _k, 1); _u = _q['h'] / _b['H']
             _q['c'] = round((_b['x0'] + _b['x1']) / 2 * _u - _sdx, 1)
 js = js[:_m.start(1)] + json.dumps(_FR, ensure_ascii=False) + js[_m.end(1):]
+
+# ---- avatar v2 data: baseBody + 6 equip slots kept in sync with the legacy eq (render stays legacy until art arrives) ----
+js = rep(js, "      st.users = {}; st.log = [",
+         "      { const _av = YGAvatar.migrateProfile({ gender: st.gender, baseBody: sv.baseBody, equipped: sv.equipped, eq: st.eq }); st.baseBody = _av.baseBody; st.equipped = _av.equipped; }\n      st.users = {}; st.log = [")
