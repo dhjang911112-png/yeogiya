@@ -36,11 +36,12 @@ button.chip[aria-pressed="true"] { border-color:var(--accent); background:color-
 <body>
 <div class="wrap">
   <h1>아바타 실험실 · 정면 시범</h1>
-  <div class="sub">공식 기본 바디(정면 1장)를 머리·몸통·양팔·양다리로 나눈 리그예요. 아래 방향(↓, S)으로 걸을 때가 정면 그림에 맞는 동작이에요. 다른 방향 그림은 아직 없어서 정면 그림으로 대신 보이며, 화면에 "이미지 필요"로 표시돼요.</div>
+  <div class="sub">공식 기본 바디(정면)를 파츠로 나눈 리그예요. 그림이 없는 방향은 정면 그림으로 대신 보이며 "이미지 필요"로 표시돼요. 측면 걷기(디딤발 고정 IK)는 그림이 오기 전까지 회색 디버그 마네킹으로만 확인할 수 있어요(게임에는 안 나옴). 이동: 방향키/WASD 또는 왼쪽 아래 조이스틱.</div>
   <div class="row" role="group" aria-label="성별">
     <button class="chip" id="bm" aria-pressed="true">남자 기본 바디</button>
     <button class="chip" id="bf" aria-pressed="false">여자 기본 바디</button>
     <button class="chip" id="bd" aria-pressed="false">관절 표시</button>
+    <button class="chip" id="bq" aria-pressed="false">디버그 마네킹(측면 검증)</button>
     <button class="chip" id="bw" aria-pressed="false">자동 걷기</button>
   </div>
   <div class="stage" id="stage">
@@ -88,6 +89,8 @@ button.chip[aria-pressed="true"] { border-color:var(--accent); background:color-
   btn('bf', () => { look.body = 'female_base'; document.getElementById('bf').setAttribute('aria-pressed', 'true'); document.getElementById('bm').setAttribute('aria-pressed', 'false'); refresh(); });
   btn('bd', () => { debug = !debug; document.getElementById('bd').setAttribute('aria-pressed', String(debug)); });
   btn('bw', () => { auto = !auto; document.getElementById('bw').setAttribute('aria-pressed', String(auto)); });
+  let mq = false, savedBody = 'male_base';
+  btn('bq', () => { mq = !mq; document.getElementById('bq').setAttribute('aria-pressed', String(mq)); if (mq) { AV.makeMannequin(); savedBody = look.body; look.body = 'mannequin'; } else look.body = savedBody; prints.length = 0; refresh(); });
   const SLOTN = { hair: '헤어', top: '상의', bottom: '하의', shoes: '신발', outer: '아우터', accessory: '액세서리' };
   function refresh() {
     const m = AV.manifest; if (!m) return;
@@ -103,14 +106,14 @@ button.chip[aria-pressed="true"] { border-color:var(--accent); background:color-
     const raw = t - last; last = t; const dt = Math.min(0.05, raw / 1000);
     fN++; worst = Math.max(worst, raw); if (t - fT > 500) { document.getElementById('fps').textContent = Math.round(fN * 1000 / (t - fT)) + 'fps · 최악 ' + Math.round(worst) + 'ms'; fN = 0; fT = t; worst = 0; }
     let ix = (keys.has('r') ? 1 : 0) - (keys.has('l') ? 1 : 0) + stick.x, iy = (keys.has('d') ? 1 : 0) - (keys.has('u') ? 1 : 0) + stick.y;
-    if (auto) { ix = 0; iy = me.y > H * 0.82 ? -1 : (me.y < H * 0.2 ? 1 : (me.autoDir || 1)); me.autoDir = iy; if (me.y > H * 0.82) { me.y = H * 0.2; prints.length = 0; } iy = 1; }
+    if (auto) { iy = 0; ix = me.autoX || 1; if (me.x > W - 60) me.autoX = -1; if (me.x < 60) me.autoX = 1; ix = me.autoX || 1; }
     const L = Math.hypot(ix, iy); if (L > 1) { ix /= L; iy /= L; }
     const tv = L > 0.12 ? 1 : 0;
     const acc = (tv ? 1000 : 1500) * dt;
     const tx = ix * SPEED, ty = iy * SPEED;
     me.vx += Math.max(-acc, Math.min(acc, tx - me.vx)); me.vy += Math.max(-acc, Math.min(acc, ty - me.vy));
     const ox = me.x, oy = me.y;
-    me.x = Math.max(40, Math.min(W - 40, me.x + me.vx * dt)); me.y = Math.max(160, Math.min(H - 10, me.y + me.vy * dt));
+    me.x = Math.max(40, Math.min(W - 40, me.x + me.vx * dt)); me.y = Math.max(Math.min(H * 0.34, 190) + 10, Math.min(H - 10, me.y + me.vy * dt));
     const moved = Math.hypot(me.x - ox, me.y - oy);
     const ax = Math.abs(me.vx), ay = Math.abs(me.vy);
     if (moved > 0.01) { if (ax > ay * 1.2) me.dir = me.vx > 0 ? 'right' : 'left'; else if (ay > ax * 1.2) me.dir = me.vy > 0 ? 'front' : 'back'; }
@@ -128,15 +131,18 @@ button.chip[aria-pressed="true"] { border-color:var(--accent); background:color-
     ctx.save(); ctx.translate(me.x - 256 * S, me.y - 1000 * S);
     const res = AV.draw(ctx, look, a, { scale: S, debug: debug });
     ctx.restore();
-    // record stance foot (screen) positions in the middle of each stance
-    const P = AV.pose(a); const j = AV.manifest && AV.manifest.bodies[look.body].directions.front.joints;
-    if (j && a.walk > 0.9) {
-      const stanceL = (a.phase % 1) < 0.5;
-      const leg = stanceL ? 'L' : 'R'; const off = stanceL ? P.legL.dy : P.legR.dy;
-      const fx = me.x + (j['ankle' + leg][0] - 256) * S, fy = me.y + off * S;
-      window.__lab.foot = { leg: leg, x: fx, y: fy, phase: a.phase };
-      const lastP = prints[prints.length - 1];
-      if (!lastP || lastP.leg !== leg) prints.push({ leg: leg, x: fx, y: fy }); if (prints.length > 30) prints.shift();
+    // 디딤발 화면 위치 기록(미끄럼 측정) — 디딤 구간 가운데에서 찍음
+    if (a.walk > 0.9) {
+      const side = res.dir === 'left' || res.dir === 'right';
+      const stanceA = (a.phase % 1) < 0.5;
+      const which = side ? (stanceA ? 'Near' : 'Far') : (stanceA ? 'L' : 'R');
+      const fp = AV.footPos(look, a, which);
+      if (fp) {
+        const fx = me.x + (fp[0] - 256) * S, fy = me.y + (fp[1] - 1000) * S;
+        window.__lab.foot = { leg: which, x: fx, y: fy, phase: a.phase, dir: res.dir };
+        const lastP = prints[prints.length - 1];
+        if (!lastP || lastP.leg !== which) prints.push({ leg: which, x: fx, y: fy }); if (prints.length > 30) prints.shift();
+      }
     }
     const stEl = document.getElementById('st');
     const warn = res.missing.filter((m) => m.indexOf('방향') >= 0);

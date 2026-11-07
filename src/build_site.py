@@ -305,6 +305,7 @@ js = rep(js, "        const dx = e.clientX - d.sx, dy = e.clientY - d.sy;", "   
 
 exec(open(B + '/wardrobe_patch.py').read())
 exec(open(B + '/motion_patch.py').read())
+exec(open(B + '/avatar_game_patch.py').read())
 head, fn = convert(blob(xdc))
 extra = '''<div id="yg-fx" style="position:absolute;left:0;top:57px;width:100%;height:calc(var(--yg-h) - 176px);pointer-events:none;z-index:1400;overflow:hidden"></div>
 <div id="yg-online" class="off">서버 연결 중...</div>

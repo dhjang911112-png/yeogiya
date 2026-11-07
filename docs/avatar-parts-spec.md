@@ -145,3 +145,71 @@ art/avatar/
 | 신발 2종 | 양발 × 4방향 × 2 | 16장 |
 
 정면의 팔·다리를 10파츠(팔꿈치·무릎 분리)로 다시 나눈 버전도 있으면 좋습니다. 정면도 무릎이 접히는 걷기가 가능해집니다.
+
+## 9. 최소 검증 세트 — 작업 키트 (`art/avatar/_kit/`)
+
+| 파일 | 용도 |
+|---|---|
+| `blank_512x1024.png` | 빈 투명 캔버스. 파츠마다 이걸 복사해서 그립니다 |
+| `{male,female}_base/{left,right}/_guide_*.png` | 가이드 레이어(옅은 정면 실루엣 + 관절 높이선 + 발바닥선 + 앞 방향). **맨 위 별도 레이어로 깔고, 내보낼 때는 숨기세요** |
+| `{male,female}_base/{left,right}/joints.json` | 측면 관절 제안 좌표. 그린 그림에 맞게 숫자만 고치면 됩니다(모르면 그대로 두고 그림만 보내주세요) |
+| `clothing_layers_example.png` | 티셔츠·바지·신발을 어느 파츠 파일로 나누는지 색으로 표시한 예시 |
+
+측면(left/right) 기본 바디 파일 이름 — 한 방향에 10장:
+
+```
+art/avatar/base/male_base/right/head.png
+art/avatar/base/male_base/right/torso.png
+art/avatar/base/male_base/right/upperArmNear.png   art/avatar/base/male_base/right/lowerArmNear.png
+art/avatar/base/male_base/right/upperArmFar.png    art/avatar/base/male_base/right/lowerArmFar.png
+art/avatar/base/male_base/right/upperLegNear.png   art/avatar/base/male_base/right/lowerLegNear.png
+art/avatar/base/male_base/right/upperLegFar.png    art/avatar/base/male_base/right/lowerLegFar.png
+art/avatar/base/male_base/right/joints.json
+```
+
+헤어 분리 / 대머리 머리 (정면 기준, 다른 방향도 같은 규칙):
+
+```
+art/avatar/base/male_base/front/head.png                      ← 머리카락 없는 머리로 교체(이마·두피 포함)
+art/avatar/items/hair/hair_base_m/item.json                   {"name":"기본 헤어","price":0}
+art/avatar/items/hair/hair_base_m/male/front/head.png         ← 앞머리(얼굴 위)
+art/avatar/items/hair/hair_base_m/male/front/head_back.png    ← 뒷머리(얼굴·몸 뒤)
+```
+
+테스트 의상 3종 (실험실이 이 이름으로 미리 장착해 둠):
+
+```
+art/avatar/items/top/tee_white/item.json                      {"name":"흰 티셔츠","price":3000}
+art/avatar/items/top/tee_white/male/right/torso.png
+art/avatar/items/top/tee_white/male/right/upperArmNear.png
+art/avatar/items/top/tee_white/male/right/upperArmFar.png
+art/avatar/items/bottom/jeans_blue/male/right/torso.png       ← 허리·골반
+art/avatar/items/bottom/jeans_blue/male/right/upperLegNear.png  …/lowerLegNear.png  …/upperLegFar.png  …/lowerLegFar.png
+art/avatar/items/shoes/sneakers_white/male/right/lowerLegNear.png  …/lowerLegFar.png   ← 발 부분만
+```
+(여자는 `female/`, 왼쪽은 `left/` 폴더에 같은 이름으로. 정면은 `armL/armR/legL/legR` 이름)
+
+## 10. 이미지를 넣은 뒤 바로 테스트하는 방법
+
+- **가장 쉬운 방법:** PNG를 채팅으로 보내주시면 제가 폴더에 넣고 빌드해서 확인 링크를 드립니다.
+- **직접 할 때:**
+  1. 위 경로에 파일 넣기
+  2. `python3 src/build_site.py` 실행 → `assets/avatar/manifest.json`의 `problems`가 비어 있는지 확인
+  3. 브랜치에 커밋하면 확인용 주소에서 바로 열립니다:
+     - 실험실: `https://raw.githack.com/dhjang911112-png/yeogiya/visual-overhaul-v1/avatar-lab.html`
+     - 실험실에서 →/← 키(또는 조이스틱)로 걸으면 측면 리그가 적용됩니다. "관절 표시"로 회전축이 맞는지 봅니다.
+     - 디딤발 자리에 주황 발자국이 찍힙니다. 발자국과 발이 어긋나지 않으면 미끄럼이 없는 것입니다.
+
+## 11. 실제 게임 화면에서 새 렌더러 켜기
+
+- 게임 주소 뒤에 `?avatar=on` 또는 `?avatar=force`를 붙입니다. 한 번 붙이면 그 기기에 기억되고, `?avatar=off`로 끕니다.
+- 게임 안에서도 '내 프로필' 탭 → "개발자 시험 · 새 아바타 렌더러"에서 끔/켬/강제를 고를 수 있습니다.
+
+| 모드 | 동작 |
+|---|---|
+| 끔 (기본) | 지금 운영과 같은 기존 그림 |
+| 켬 | 그 캐릭터의 **현재 방향 몸 그림 + 장착한 모든 옷 그림이 다 있을 때만** 새 렌더러. 하나라도 없으면 기존 그림으로 표시(대체) |
+| 강제 | 그림 없는 옷 칸은 비우고 새 바디로 표시(속옷 상태). 방향 그림이 없으면 기존 그림 |
+
+- 앉기·눕기·춤은 아직 새 그림이 없어서 항상 기존 그림으로 표시됩니다.
+- 설정은 보는 사람 기준입니다. 같은 캐릭터라도 내 설정에 따라 새/기존 그림으로 보입니다. 장착 정보는 모두에게 같이 전달됩니다.
