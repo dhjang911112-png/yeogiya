@@ -162,12 +162,506 @@
        1000
       ]
      }
+    },
+    "left": {
+     "parts": {
+      "head": {
+       "src": "assets/avatar/base/female_base/left/head.png",
+       "x": 89,
+       "y": 53,
+       "w": 365,
+       "h": 325,
+       "pivot": [
+        268.7,
+        352.1
+       ]
+      },
+      "lowerArmFar": {
+       "src": "assets/avatar/base/female_base/left/lowerArmFar.png",
+       "x": 187,
+       "y": 518,
+       "w": 120,
+       "h": 196,
+       "pivot": [
+        224.6,
+        534.2
+       ]
+      },
+      "lowerArmNear": {
+       "src": "assets/avatar/base/female_base/left/lowerArmNear.png",
+       "x": 187,
+       "y": 526,
+       "w": 130,
+       "h": 202,
+       "pivot": [
+        276.9,
+        543.5
+       ]
+      },
+      "lowerLegFar": {
+       "src": "assets/avatar/base/female_base/left/lowerLegFar.png",
+       "x": 171,
+       "y": 746,
+       "w": 130,
+       "h": 258,
+       "sole": [
+        [
+         174,
+         970
+        ],
+        [
+         189,
+         985
+        ],
+        [
+         204,
+         989
+        ],
+        [
+         220,
+         998
+        ],
+        [
+         235,
+         1001
+        ],
+        [
+         250,
+         1000
+        ],
+        [
+         266,
+         999
+        ],
+        [
+         281,
+         996
+        ],
+        [
+         297,
+         984
+        ]
+       ],
+       "pivot": [
+        232.9,
+        767.4
+       ]
+      },
+      "lowerLegNear": {
+       "src": "assets/avatar/base/female_base/left/lowerLegNear.png",
+       "x": 169,
+       "y": 738,
+       "w": 152,
+       "h": 266,
+       "sole": [
+        [
+         173,
+         987
+        ],
+        [
+         190,
+         997
+        ],
+        [
+         207,
+         999
+        ],
+        [
+         224,
+         999
+        ],
+        [
+         241,
+         1001
+        ],
+        [
+         258,
+         996
+        ],
+        [
+         275,
+         989
+        ],
+        [
+         292,
+         986
+        ],
+        [
+         309,
+         972
+        ]
+       ],
+       "pivot": [
+        261.0,
+        760.3
+       ]
+      },
+      "torso": {
+       "src": "assets/avatar/base/female_base/left/torso.png",
+       "x": 151,
+       "y": 317,
+       "w": 194,
+       "h": 312,
+       "pivot": [
+        256,
+        581.8
+       ]
+      },
+      "upperArmFar": {
+       "src": "assets/avatar/base/female_base/left/upperArmFar.png",
+       "x": 149,
+       "y": 360,
+       "w": 115,
+       "h": 191,
+       "pivot": [
+        193.8,
+        393.4
+       ]
+      },
+      "upperArmNear": {
+       "src": "assets/avatar/base/female_base/left/upperArmNear.png",
+       "x": 237,
+       "y": 360,
+       "w": 142,
+       "h": 201,
+       "pivot": [
+        323.8,
+        393.4
+       ]
+      },
+      "upperLegFar": {
+       "src": "assets/avatar/base/female_base/left/upperLegFar.png",
+       "x": 143,
+       "y": 572,
+       "w": 140,
+       "h": 217,
+       "pivot": [
+        212.5,
+        597.9
+       ]
+      },
+      "upperLegNear": {
+       "src": "assets/avatar/base/female_base/left/upperLegNear.png",
+       "x": 210,
+       "y": 555,
+       "w": 158,
+       "h": 229,
+       "pivot": [
+        292.9,
+        581.8
+       ]
+      }
+     },
+     "joints": {
+      "neck": [
+       268.7,
+       352.1
+      ],
+      "shoulderNear": [
+       323.8,
+       393.4
+      ],
+      "elbowNear": [
+       276.9,
+       543.5
+      ],
+      "handNear": [
+       230.1,
+       681.2
+      ],
+      "hipNear": [
+       292.9,
+       581.8
+      ],
+      "kneeNear": [
+       261.0,
+       760.3
+      ],
+      "ankleNear": [
+       270.3,
+       963.9
+      ],
+      "shoulderFar": [
+       193.8,
+       393.4
+      ],
+      "elbowFar": [
+       224.6,
+       534.2
+      ],
+      "handFar": [
+       265.4,
+       668.0
+      ],
+      "hipFar": [
+       212.5,
+       597.9
+      ],
+      "kneeFar": [
+       232.9,
+       767.4
+      ],
+      "ankleFar": [
+       214.7,
+       965.0
+      ],
+      "root": [
+       256,
+       1000
+      ]
+     }
+    },
+    "right": {
+     "parts": {
+      "head": {
+       "src": "assets/avatar/base/female_base/right/head.png",
+       "x": 58,
+       "y": 52,
+       "w": 364,
+       "h": 335,
+       "pivot": [
+        236.2,
+        359.8
+       ]
+      },
+      "lowerArmFar": {
+       "src": "assets/avatar/base/female_base/right/lowerArmFar.png",
+       "x": 332,
+       "y": 521,
+       "w": 117,
+       "h": 181,
+       "pivot": [
+        367.8,
+        537.2
+       ]
+      },
+      "lowerArmNear": {
+       "src": "assets/avatar/base/female_base/right/lowerArmNear.png",
+       "x": 88,
+       "y": 538,
+       "w": 145,
+       "h": 228,
+       "pivot": [
+        134.3,
+        557.4
+       ]
+      },
+      "lowerLegFar": {
+       "src": "assets/avatar/base/female_base/right/lowerLegFar.png",
+       "x": 266,
+       "y": 761,
+       "w": 133,
+       "h": 243,
+       "sole": [
+        [
+         269,
+         973
+        ],
+        [
+         284,
+         992
+        ],
+        [
+         300,
+         993
+        ],
+        [
+         315,
+         997
+        ],
+        [
+         331,
+         1001
+        ],
+        [
+         347,
+         1000
+        ],
+        [
+         362,
+         999
+        ],
+        [
+         378,
+         996
+        ],
+        [
+         394,
+         982
+        ]
+       ],
+       "pivot": [
+        328.3,
+        779.8
+       ]
+      },
+      "lowerLegNear": {
+       "src": "assets/avatar/base/female_base/right/lowerLegNear.png",
+       "x": 174,
+       "y": 758,
+       "w": 155,
+       "h": 245,
+       "sole": [
+        [
+         183,
+         974
+        ],
+        [
+         200,
+         991
+        ],
+        [
+         218,
+         993
+        ],
+        [
+         236,
+         996
+        ],
+        [
+         254,
+         999
+        ],
+        [
+         271,
+         1000
+        ],
+        [
+         289,
+         999
+        ],
+        [
+         307,
+         995
+        ],
+        [
+         325,
+         982
+        ]
+       ],
+       "pivot": [
+        236.8,
+        778.8
+       ]
+      },
+      "torso": {
+       "src": "assets/avatar/base/female_base/right/torso.png",
+       "x": 151,
+       "y": 323,
+       "w": 205,
+       "h": 339,
+       "pivot": [
+        256,
+        594.1
+       ]
+      },
+      "upperArmFar": {
+       "src": "assets/avatar/base/female_base/right/upperArmFar.png",
+       "x": 300,
+       "y": 366,
+       "w": 101,
+       "h": 187,
+       "pivot": [
+        341.5,
+        397.9
+       ]
+      },
+      "upperArmNear": {
+       "src": "assets/avatar/base/female_base/right/upperArmNear.png",
+       "x": 100,
+       "y": 362,
+       "w": 134,
+       "h": 213,
+       "pivot": [
+        183.6,
+        397.9
+       ]
+      },
+      "upperLegFar": {
+       "src": "assets/avatar/base/female_base/right/upperLegFar.png",
+       "x": 251,
+       "y": 571,
+       "w": 132,
+       "h": 234,
+       "pivot": [
+        316.3,
+        596.9
+       ]
+      },
+      "upperLegNear": {
+       "src": "assets/avatar/base/female_base/right/upperLegNear.png",
+       "x": 157,
+       "y": 567,
+       "w": 139,
+       "h": 237,
+       "pivot": [
+        226.4,
+        594.1
+       ]
+      }
+     },
+     "joints": {
+      "neck": [
+       236.2,
+       359.8
+      ],
+      "shoulderNear": [
+       183.6,
+       397.9
+      ],
+      "elbowNear": [
+       134.3,
+       557.4
+      ],
+      "handNear": [
+       184.2,
+       713.9
+      ],
+      "hipNear": [
+       226.4,
+       594.1
+      ],
+      "kneeNear": [
+       236.8,
+       778.8
+      ],
+      "ankleNear": [
+       223.6,
+       966.7
+      ],
+      "shoulderFar": [
+       341.5,
+       397.9
+      ],
+      "elbowFar": [
+       367.8,
+       537.2
+      ],
+      "handFar": [
+       412.2,
+       660.9
+      ],
+      "hipFar": [
+       316.3,
+       596.9
+      ],
+      "kneeFar": [
+       328.3,
+       779.8
+      ],
+      "ankleFar": [
+       304.2,
+       966.9
+      ],
+      "root": [
+       256,
+       1000
+      ]
+     }
     }
    },
    "missing": [
     "back 방향 기본 바디",
-    "left 방향 기본 바디",
-    "right 방향 기본 바디",
     "머리카락 없는 머리(헤어 분리)",
     "가려진 부분 보완(겨드랑이·속옷 안 허벅지·턱 아래 목)"
    ]
@@ -294,12 +788,506 @@
        1000
       ]
      }
+    },
+    "left": {
+     "parts": {
+      "head": {
+       "src": "assets/avatar/base/male_base/left/head.png",
+       "x": 88,
+       "y": 36,
+       "w": 360,
+       "h": 361,
+       "pivot": [
+        260.2,
+        369.7
+       ]
+      },
+      "lowerArmFar": {
+       "src": "assets/avatar/base/male_base/left/lowerArmFar.png",
+       "x": 61,
+       "y": 535,
+       "w": 133,
+       "h": 189,
+       "pivot": [
+        154.8,
+        552.1
+       ]
+      },
+      "lowerArmNear": {
+       "src": "assets/avatar/base/male_base/left/lowerArmNear.png",
+       "x": 194,
+       "y": 549,
+       "w": 160,
+       "h": 189,
+       "pivot": [
+        316.8,
+        565.5
+       ]
+      },
+      "lowerLegFar": {
+       "src": "assets/avatar/base/male_base/left/lowerLegFar.png",
+       "x": 174,
+       "y": 731,
+       "w": 129,
+       "h": 273,
+       "sole": [
+        [
+         178,
+         982
+        ],
+        [
+         193,
+         994
+        ],
+        [
+         208,
+         997
+        ],
+        [
+         223,
+         1000
+        ],
+        [
+         238,
+         1000
+        ],
+        [
+         253,
+         997
+        ],
+        [
+         268,
+         990
+        ],
+        [
+         283,
+         984
+        ],
+        [
+         298,
+         971
+        ]
+       ],
+       "pivot": [
+        241.8,
+        752.2
+       ]
+      },
+      "lowerLegNear": {
+       "src": "assets/avatar/base/male_base/left/lowerLegNear.png",
+       "x": 206,
+       "y": 749,
+       "w": 139,
+       "h": 256,
+       "sole": [
+        [
+         210,
+         982
+        ],
+        [
+         226,
+         994
+        ],
+        [
+         242,
+         997
+        ],
+        [
+         258,
+         999
+        ],
+        [
+         275,
+         1000
+        ],
+        [
+         291,
+         996
+        ],
+        [
+         307,
+         989
+        ],
+        [
+         323,
+         986
+        ],
+        [
+         340,
+         965
+        ]
+       ],
+       "pivot": [
+        289.6,
+        769.4
+       ]
+      },
+      "torso": {
+       "src": "assets/avatar/base/male_base/left/torso.png",
+       "x": 154,
+       "y": 336,
+       "w": 191,
+       "h": 325,
+       "pivot": [
+        256,
+        569.0
+       ]
+      },
+      "upperArmFar": {
+       "src": "assets/avatar/base/male_base/left/upperArmFar.png",
+       "x": 121,
+       "y": 381,
+       "w": 119,
+       "h": 188,
+       "pivot": [
+        190.1,
+        413.9
+       ]
+      },
+      "upperArmNear": {
+       "src": "assets/avatar/base/male_base/left/upperArmNear.png",
+       "x": 280,
+       "y": 391,
+       "w": 111,
+       "h": 191,
+       "pivot": [
+        339.1,
+        424.8
+       ]
+      },
+      "upperLegFar": {
+       "src": "assets/avatar/base/male_base/left/upperLegFar.png",
+       "x": 160,
+       "y": 542,
+       "w": 126,
+       "h": 235,
+       "pivot": [
+        219.5,
+        569.0
+       ]
+      },
+      "upperLegNear": {
+       "src": "assets/avatar/base/male_base/left/upperLegNear.png",
+       "x": 234,
+       "y": 572,
+       "w": 127,
+       "h": 221,
+       "pivot": [
+        298.8,
+        597.7
+       ]
+      }
+     },
+     "joints": {
+      "neck": [
+       260.2,
+       369.7
+      ],
+      "shoulderNear": [
+       339.1,
+       424.8
+      ],
+      "elbowNear": [
+       316.8,
+       565.5
+      ],
+      "handNear": [
+       239.0,
+       695.2
+      ],
+      "hipNear": [
+       298.8,
+       597.7
+      ],
+      "kneeNear": [
+       289.6,
+       769.4
+      ],
+      "ankleNear": [
+       299.4,
+       965.3
+      ],
+      "shoulderFar": [
+       190.1,
+       413.9
+      ],
+      "elbowFar": [
+       154.8,
+       552.1
+      ],
+      "handFar": [
+       105.8,
+       680.2
+      ],
+      "hipFar": [
+       219.5,
+       569.0
+      ],
+      "kneeFar": [
+       241.8,
+       752.2
+      ],
+      "ankleFar": [
+       256.4,
+       962.7
+      ],
+      "root": [
+       256,
+       1000
+      ]
+     }
+    },
+    "right": {
+     "parts": {
+      "head": {
+       "src": "assets/avatar/base/male_base/right/head.png",
+       "x": 56,
+       "y": 37,
+       "w": 360,
+       "h": 363,
+       "pivot": [
+        259.9,
+        369.9
+       ]
+      },
+      "lowerArmFar": {
+       "src": "assets/avatar/base/male_base/right/lowerArmFar.png",
+       "x": 330,
+       "y": 542,
+       "w": 117,
+       "h": 217,
+       "pivot": [
+        372.1,
+        560.1
+       ]
+      },
+      "lowerArmNear": {
+       "src": "assets/avatar/base/male_base/right/lowerArmNear.png",
+       "x": 101,
+       "y": 564,
+       "w": 108,
+       "h": 228,
+       "pivot": [
+        157.3,
+        582.3
+       ]
+      },
+      "lowerLegFar": {
+       "src": "assets/avatar/base/male_base/right/lowerLegFar.png",
+       "x": 288,
+       "y": 757,
+       "w": 151,
+       "h": 246,
+       "sole": [
+        [
+         318,
+         968
+        ],
+        [
+         332,
+         988
+        ],
+        [
+         347,
+         992
+        ],
+        [
+         361,
+         999
+        ],
+        [
+         376,
+         998
+        ],
+        [
+         390,
+         998
+        ],
+        [
+         405,
+         997
+        ],
+        [
+         419,
+         995
+        ],
+        [
+         434,
+         986
+        ]
+       ],
+       "pivot": [
+        331.3,
+        777.6
+       ]
+      },
+      "lowerLegNear": {
+       "src": "assets/avatar/base/male_base/right/lowerLegNear.png",
+       "x": 140,
+       "y": 742,
+       "w": 158,
+       "h": 263,
+       "sole": [
+        [
+         149,
+         971
+        ],
+        [
+         166,
+         989
+        ],
+        [
+         184,
+         992
+        ],
+        [
+         202,
+         996
+        ],
+        [
+         220,
+         1001
+        ],
+        [
+         238,
+         999
+        ],
+        [
+         256,
+         998
+        ],
+        [
+         274,
+         994
+        ],
+        [
+         292,
+         981
+        ]
+       ],
+       "pivot": [
+        208.3,
+        763.9
+       ]
+      },
+      "torso": {
+       "src": "assets/avatar/base/male_base/right/torso.png",
+       "x": 160,
+       "y": 335,
+       "w": 198,
+       "h": 322,
+       "pivot": [
+        256,
+        592.3
+       ]
+      },
+      "upperArmFar": {
+       "src": "assets/avatar/base/male_base/right/upperArmFar.png",
+       "x": 287,
+       "y": 381,
+       "w": 127,
+       "h": 197,
+       "pivot": [
+        334.7,
+        414.4
+       ]
+      },
+      "upperArmNear": {
+       "src": "assets/avatar/base/male_base/right/upperArmNear.png",
+       "x": 113,
+       "y": 386,
+       "w": 144,
+       "h": 215,
+       "pivot": [
+        198.7,
+        423.5
+       ]
+      },
+      "upperLegFar": {
+       "src": "assets/avatar/base/male_base/right/upperLegFar.png",
+       "x": 256,
+       "y": 599,
+       "w": 128,
+       "h": 201,
+       "pivot": [
+        315.4,
+        621.6
+       ]
+      },
+      "upperLegNear": {
+       "src": "assets/avatar/base/male_base/right/upperLegNear.png",
+       "x": 158,
+       "y": 567,
+       "w": 146,
+       "h": 219,
+       "pivot": [
+        232.7,
+        592.3
+       ]
+      }
+     },
+     "joints": {
+      "neck": [
+       259.9,
+       369.9
+      ],
+      "shoulderNear": [
+       198.7,
+       423.5
+      ],
+      "elbowNear": [
+       157.3,
+       582.3
+      ],
+      "handNear": [
+       159.0,
+       740.8
+      ],
+      "hipNear": [
+       232.7,
+       592.3
+      ],
+      "kneeNear": [
+       208.3,
+       763.9
+      ],
+      "ankleNear": [
+       191.3,
+       964.5
+      ],
+      "shoulderFar": [
+       334.7,
+       414.4
+      ],
+      "elbowFar": [
+       372.1,
+       560.1
+      ],
+      "handFar": [
+       404.4,
+       708.1
+      ],
+      "hipFar": [
+       315.4,
+       621.6
+      ],
+      "kneeFar": [
+       331.3,
+       777.6
+      ],
+      "ankleFar": [
+       353.9,
+       966.5
+      ],
+      "root": [
+       256,
+       1000
+      ]
+     }
     }
    },
    "missing": [
     "back 방향 기본 바디",
-    "left 방향 기본 바디",
-    "right 방향 기본 바디",
     "머리카락 없는 머리(헤어 분리)",
     "가려진 부분 보완(겨드랑이·속옷 안 허벅지·턱 아래 목)"
    ]

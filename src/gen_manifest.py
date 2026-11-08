@@ -15,7 +15,7 @@ WEB = 'assets/avatar'
 DIRS = ['front', 'back', 'left', 'right']
 SLOTS = ['hair', 'top', 'bottom', 'shoes', 'outer', 'accessory']
 import re
-JOINT_OF = {'arm': 'shoulder', 'upperArm': 'shoulder', 'lowerArm': 'elbow', 'leg': 'hip', 'upperLeg': 'hip', 'lowerLeg': 'knee'}
+JOINT_OF = {'arm': 'shoulder', 'upperArm': 'shoulder', 'lowerArm': 'elbow', 'leg': 'hip', 'upperLeg': 'hip', 'lowerLeg': 'knee', 'foot': 'ankle'}
 PARTS_SIDE = ['head', 'torso', 'upperArmNear', 'lowerArmNear', 'upperArmFar', 'lowerArmFar', 'upperLegNear', 'lowerLegNear', 'upperLegFar', 'lowerLegFar']
 JOINTS_SIDE = ['neck', 'root'] + [j + s for s in ('Near', 'Far') for j in ('shoulder', 'elbow', 'hand', 'hip', 'knee', 'ankle')]
 
@@ -25,7 +25,7 @@ def pivot_for(name, J):
     if name == 'torso':
         hips = [v for k, v in J.items() if k.startswith('hip')]
         return [J.get('root', [256, 1000])[0], min(h[1] for h in hips)] if hips else None
-    m = re.match(r'^(arm|upperArm|lowerArm|leg|upperLeg|lowerLeg)(L|R|Near|Far)$', name)
+    m = re.match(r'^(arm|upperArm|lowerArm|leg|upperLeg|lowerLeg|foot)(L|R|Near|Far)$', name)
     return J.get(JOINT_OF[m.group(1)] + m.group(2)) if m else None
 
 
@@ -54,7 +54,25 @@ def crop_save(src, dst_rel):
     if not bb: problems.append('%s: 비어 있음' % src); return None
     os.makedirs(os.path.dirname(OUT + '/' + dst_rel), exist_ok=True)
     im.crop(bb).save(OUT + '/' + dst_rel, optimize=True)
-    return {'src': WEB + '/' + dst_rel, 'x': bb[0], 'y': bb[1], 'w': bb[2] - bb[0], 'h': bb[3] - bb[1]}
+    rec = {'src': WEB + '/' + dst_rel, 'x': bb[0], 'y': bb[1], 'w': bb[2] - bb[0], 'h': bb[3] - bb[1]}
+    nm = os.path.basename(src)[:-4]
+    if nm.startswith('lowerLeg') or nm.startswith('foot'):
+        # 발바닥 양 끝(뒤꿈치/발끝) — 걸을 때 발이 땅에 파묻히지 않게 쓰는 값
+        al = im.split()[-1].point(lambda v: 255 if v > 40 else 0)
+        sb = al.getbbox()
+        if sb:
+            import numpy as _np
+            A = _np.array(al) > 0
+            band = A[max(0, sb[3] - 40):sb[3]]
+            cols = _np.where(band.any(0))[0]
+            if len(cols):
+                xs = _np.linspace(cols.min(), cols.max(), 9).astype(int)
+                pts = []
+                for x in xs:
+                    ys = _np.where(A[:, x])[0]
+                    if len(ys): pts.append([int(x), int(ys.max()) + 1])
+                rec['sole'] = pts
+    return rec
 
 
 M = {'version': 2, 'canvas': [512, 1024], 'footY': 1000, 'drawOrder': ORDER, 'bodies': {}, 'items': {}, 'problems': problems}

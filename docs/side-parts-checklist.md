@@ -59,17 +59,22 @@ joints.json
 ## 4. 겹침 순서 (아래 → 위, 측면)
 
 ```
-1  upperArmFar     ← 가장 뒤
-2  lowerArmFar
-3  upperLegFar
-4  lowerLegFar
-5  torso
-6  upperLegNear
-7  lowerLegNear
-8  head
-9  upperArmNear
-10 lowerArmNear    ← 가장 앞
+1  lowerArmFar     ← 가장 뒤
+2  upperArmFar
+3  lowerLegFar
+4  (footFar)
+5  upperLegFar
+6  lowerLegNear
+7  (footNear)
+8  upperLegNear
+9  torso           ← 반바지가 허벅지 윗단면을 덮음
+10 head
+11 lowerArmNear
+12 upperArmNear    ← 가장 앞
 ```
+- 2026-11-08 실제 그림 투입 후 변경: 아래팔/정강이의 잘린 윗단면이 위팔/허벅지 밑으로, 허벅지 윗단면이 몸통(반바지) 밑으로 숨도록 순서를 바꿨습니다.
+- 관절의 **바깥쪽 파츠(위팔 아래끝, 허벅지 아래끝)는 둥글게 마감**하고, 안쪽 파츠(아래팔·정강이 윗끝)는 단면이 있어도 됩니다. 단면은 위 파츠 밑에 숨습니다.
+- 선택: `footNear.png`/`footFar.png`(발만 따로)를 넣으면 발이 정강이와 따로 움직입니다(회전축 = ankle). 없으면 정강이 그림의 발바닥을 굴려서 처리합니다.
 - 옷은 각 몸 파츠 바로 위에 붙습니다. 예를 들어 `upperArmNear` 소매는 `upperArmNear` 위에 그려집니다.
 - 이름 끝에 `_back`이 붙은 옷 그림(예: 후드 뒷부분)은 해당 방향의 맨 뒤에 그려집니다.
 - 슬롯 순서는 하의 → 신발 → 상의 → 아우터 → 액세서리 → 헤어입니다. 그래서 가디건은 바지 위에 놓입니다.

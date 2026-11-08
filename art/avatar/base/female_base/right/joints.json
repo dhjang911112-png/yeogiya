@@ -1,0 +1,67 @@
+{
+ "joints": {
+  "neck": [
+   236.2,
+   359.8
+  ],
+  "shoulderNear": [
+   183.6,
+   397.9
+  ],
+  "elbowNear": [
+   134.3,
+   557.4
+  ],
+  "handNear": [
+   184.2,
+   713.9
+  ],
+  "hipNear": [
+   226.4,
+   594.1
+  ],
+  "kneeNear": [
+   236.8,
+   778.8
+  ],
+  "ankleNear": [
+   223.6,
+   966.7
+  ],
+  "shoulderFar": [
+   341.5,
+   397.9
+  ],
+  "elbowFar": [
+   367.8,
+   537.2
+  ],
+  "handFar": [
+   412.2,
+   660.9
+  ],
+  "hipFar": [
+   316.3,
+   596.9
+  ],
+  "kneeFar": [
+   328.3,
+   779.8
+  ],
+  "ankleFar": [
+   304.2,
+   966.9
+  ],
+  "root": [
+   256,
+   1000
+  ]
+ },
+ "note": "측면 시트 female_right_sheet.png 에서 자동 조립(side_assemble.py). 배율 1.0961",
+ "scale": 1.096106731070678,
+ "sheet_heights": {
+  "head": 298,
+  "torso": 302,
+  "total": 861.2
+ }
+}

@@ -109,7 +109,15 @@
     const w = a.walk || 0, p = a.phase || 0, t = a.t || 0;
     const breathe = Math.sin(t * TAU / 3.2);
     const passing = Math.pow(Math.sin(p * TAU * 2 - Math.PI / 2) * 0.5 + 0.5, 1.3);
-    const bodyY = w * (-AV.BOB_SIDE * passing + AV.BOB_SIDE * 0.35) + (1 - w) * (-1.2 * (breathe * 0.5 + 0.5));
+    const bodyY0 = w * (-AV.BOB_SIDE * passing + AV.BOB_SIDE * 0.35) + (1 - w) * (-1.2 * (breathe * 0.5 + 0.5));
+    // 다리가 거의 펴진 그림이면 보폭 끝에서 발이 안 닿아 미끄러짐 → 걸을 때 골반을 필요한 만큼만 낮춤(무릎 살짝 굽힘)
+    let sink = 0;
+    ['Near', 'Far'].forEach((S) => {
+      const hp = J['hip' + S], kn = J['knee' + S], an = J['ankle' + S]; if (!hp || !kn || !an) return;
+      const L = (Math.hypot(kn[0] - hp[0], kn[1] - hp[1]) + Math.hypot(an[0] - kn[0], an[1] - kn[1])) * 0.985, half = AV.STRIDE_SIDE / 2;
+      sink = Math.max(sink, (an[1] - hp[1]) - Math.sqrt(Math.max(0, L * L - half * half)) + AV.BOB_SIDE * 0.65);
+    });
+    const bodyY = bodyY0 + w * sink;
     const out = {};
     const tor = parts.torso ? parts.torso.pivot : [256, 717];
     out.torso = { x: tor[0], y: tor[1] + bodyY, rot: w * fwd * 1.5 * DEG, sy: 1 + (1 - w) * 0.006 * breathe };
@@ -123,10 +131,31 @@
         let fx, fy;
         if (ph < 0.5) { fx = fwd * AV.STRIDE_SIDE * (0.5 - ph / 0.5); fy = 0; }
         else { const u = (ph - 0.5) / 0.5; fx = fwd * AV.STRIDE_SIDE * (-0.5 + smooth(u)); fy = -AV.LIFT_SIDE * Math.sin(Math.PI * u); }
-        const foot = [ank[0] + w * fx, ank[1] + w * fy];
+        const cx = ank[0] + w * (hip[0] - ank[0]); // 걸을 땐 보폭 중심을 골반 바로 아래로
+        const foot = [cx + w * fx, ank[1] + w * fy];
+        if (parts['foot' + S]) out['foot' + S] = { x: foot[0], y: foot[1], rot: ph < 0.5 ? 0 : -fwd * 8 * DEG * Math.sin(Math.PI * (ph - 0.5) / 0.5) * w, sy: 1 };
         const hp = [hip[0], hip[1] + bodyY];
-        const r = ik2(hp, foot, l1, l2, fwd);
         const restThigh = Math.atan2(knee[1] - hip[1], knee[0] - hip[0]), restShin = Math.atan2(ank[1] - knee[1], ank[0] - knee[0]);
+        let r = ik2(hp, foot, l1, l2, fwd);
+        // 발이 정강이 그림에 붙어 있으면 정강이가 기울 때 발끝/뒤꿈치가 땅 밑으로 들어감 → 그만큼 발목을 올려 굴림(뒤꿈치→발끝)
+        const lp = parts['lowerLeg' + S];
+        if (lp && lp.sole && !parts['foot' + S] && w > 0) {
+          const f0 = foot.slice();
+          for (let it = 0; it < 5; it++) {
+            const rot = r.shin - restShin, c = Math.cos(rot), sn = Math.sin(rot);
+            let best = null, by = -1e9;
+            lp.sole.forEach((q) => { const dx = q[0] - ank[0], dy = q[1] - ank[1], vy = dx * sn + dy * c; if (vy > by) { by = vy; best = [dx, dy, dx * c - dy * sn, vy]; } });
+            const ground = Math.max(...lp.sole.map((q) => q[1])) - ank[1];
+            // 디딤: 땅에 닿은 점(뒤꿈치→발바닥→발끝)을 축으로 굴림 → 닿은 점은 미끄러지지 않음
+            const pX = f0[0] + best[0] - best[2], pY = f0[1] + ground - best[3];
+            // 스윙: 땅 밑으로만 안 들어가게. 스윙 초반엔 디딤 끝 자세에서 부드럽게 이어 붙임(발끝 떼기)
+            const sX = f0[0], sY = Math.min(f0[1], f0[1] - Math.max(0, by - ground));
+            const k = ph < 0.5 ? 1 : Math.pow(Math.max(0, 1 - (ph - 0.5) / 0.5 / 0.35), 2);
+            const nx = sX + k * (pX - sX), ny = sY + k * (pY - sY);
+            if (Math.abs(nx - foot[0]) < 0.1 && Math.abs(ny - foot[1]) < 0.1) break;
+            foot[0] = nx; foot[1] = ny; r = ik2(hp, foot, l1, l2, fwd);
+          }
+        }
         if (parts['upperLeg' + S]) {
           out['upperLeg' + S] = { x: hp[0], y: hp[1], rot: r.thigh - restThigh, sy: 1 };
           if (parts['lowerLeg' + S]) out['lowerLeg' + S] = { x: r.knee[0], y: r.knee[1], rot: r.shin - restShin, sy: 1 };
@@ -162,7 +191,8 @@
   const ORDER = {
     front: ['hair_back', 'legL', 'legR', 'upperLegL', 'upperLegR', 'lowerLegL', 'lowerLegR', 'torso', 'armL', 'armR', 'upperArmL', 'upperArmR', 'lowerArmL', 'lowerArmR', 'head'],
     back: ['head', 'armL', 'armR', 'upperArmL', 'upperArmR', 'lowerArmL', 'lowerArmR', 'legL', 'legR', 'upperLegL', 'upperLegR', 'lowerLegL', 'lowerLegR', 'torso'],
-    side: ['upperArmFar', 'lowerArmFar', 'armFar', 'upperLegFar', 'lowerLegFar', 'legFar', 'torso', 'upperLegNear', 'lowerLegNear', 'legNear', 'head', 'upperArmNear', 'lowerArmNear', 'armNear']
+    // 아래팔/정강이의 잘린 단면(캡)이 위팔/허벅지 밑에, 허벅지 윗단면이 몸통(반바지) 밑에 숨도록
+    side: ['lowerArmFar', 'upperArmFar', 'armFar', 'lowerLegFar', 'footFar', 'upperLegFar', 'legFar', 'lowerLegNear', 'footNear', 'upperLegNear', 'legNear', 'torso', 'head', 'lowerArmNear', 'upperArmNear', 'armNear']
   };
   AV.SLOT_ORDER = ['bottom', 'shoes', 'top', 'outer', 'accessory', 'hair'];
 
