@@ -14,9 +14,32 @@ OUT = sys.argv[2] if len(sys.argv) > 2 else B + 'site/assets/avatar'
 WEB = 'assets/avatar'
 DIRS = ['front', 'back', 'left', 'right']
 SLOTS = ['hair', 'top', 'bottom', 'shoes', 'outer', 'accessory']
-PIVOT = {'head': 'neck', 'armL': 'shoulderL', 'armR': 'shoulderR', 'legL': 'hipL', 'legR': 'hipR',
-         'upperArmL': 'shoulderL', 'upperArmR': 'shoulderR', 'lowerArmL': 'elbowL', 'lowerArmR': 'elbowR',
-         'upperLegL': 'hipL', 'upperLegR': 'hipR', 'lowerLegL': 'kneeL', 'lowerLegR': 'kneeR'}
+import re
+JOINT_OF = {'arm': 'shoulder', 'upperArm': 'shoulder', 'lowerArm': 'elbow', 'leg': 'hip', 'upperLeg': 'hip', 'lowerLeg': 'knee'}
+PARTS_SIDE = ['head', 'torso', 'upperArmNear', 'lowerArmNear', 'upperArmFar', 'lowerArmFar', 'upperLegNear', 'lowerLegNear', 'upperLegFar', 'lowerLegFar']
+JOINTS_SIDE = ['neck', 'root'] + [j + s for s in ('Near', 'Far') for j in ('shoulder', 'elbow', 'hand', 'hip', 'knee', 'ankle')]
+
+
+def pivot_for(name, J):
+    if name == 'head': return J.get('neck')
+    if name == 'torso':
+        hips = [v for k, v in J.items() if k.startswith('hip')]
+        return [J.get('root', [256, 1000])[0], min(h[1] for h in hips)] if hips else None
+    m = re.match(r'^(arm|upperArm|lowerArm|leg|upperLeg|lowerLeg)(L|R|Near|Far)$', name)
+    return J.get(JOINT_OF[m.group(1)] + m.group(2)) if m else None
+
+
+def check_part(path, im, name, d, body_h):
+    a = im.split()[-1]
+    if im.getpixel((0, 0))[3] > 10 or im.getpixel((511, 1023))[3] > 10: problems.append('%s: 배경이 투명하지 않음(모서리)' % path)
+    bb = a.point(lambda v: 255 if v > 40 else 0).getbbox()
+    if not bb: return
+    if bb[0] == 0 or bb[1] == 0 or bb[2] == 512: problems.append('%s: 그림이 캔버스 가장자리에 닿음(잘렸을 수 있음)' % path)
+    if name.startswith('lowerLeg') or name.startswith('leg'):
+        if not (985 <= bb[3] <= 1008): problems.append('%s: 발바닥이 y=1000 기준선에 없음(현재 아래끝 y=%d)' % (path, bb[3]))
+    if name == 'head' and body_h:
+        top_ref = 1000 - body_h
+        if abs(bb[1] - top_ref) > 25: problems.append('%s: 머리 꼭대기 y=%d (정면 기준 y=%d와 25px 넘게 다름 → 키가 달라 보임)' % (path, bb[1], top_ref))
 ORDER = {'front': ['legL', 'legR', 'torso', 'armL', 'armR', 'head'],
          'back': ['head', 'armL', 'armR', 'legL', 'legR', 'torso'],
          'left': ['armR', 'legR', 'torso', 'legL', 'head', 'armL'],
@@ -35,6 +58,12 @@ def crop_save(src, dst_rel):
 
 
 M = {'version': 2, 'canvas': [512, 1024], 'footY': 1000, 'drawOrder': ORDER, 'bodies': {}, 'items': {}, 'problems': problems}
+front_h = {}
+for body in sorted(os.listdir(ART + '/base')):
+    hp = ART + '/base/%s/front/head.png' % body
+    if os.path.exists(hp):
+        bb = Image.open(hp).convert('RGBA').split()[-1].point(lambda v: 255 if v > 40 else 0).getbbox()
+        if bb: front_h[body] = 1000 - bb[1]
 for body in sorted(os.listdir(ART + '/base')):
     bd = {'gender': 'female' if body.startswith('female') else 'male', 'directions': {}, 'missing': []}
     for d in DIRS:
@@ -48,9 +77,16 @@ for body in sorted(os.listdir(ART + '/base')):
             name = f[:-4]
             rec = crop_save(p + '/' + f, 'base/%s/%s/%s' % (body, d, f))
             if not rec: continue
-            if name == 'torso': rec['pivot'] = [J.get('root', [256, 1000])[0], min(J.get('hipL', [0, 700])[1], J.get('hipR', [0, 700])[1])]
-            else: rec['pivot'] = J.get(PIVOT.get(name, ''), [256, 500])
+            check_part(p + '/' + f, Image.open(p + '/' + f).convert('RGBA'), name, d, front_h.get(body))
+            pv = pivot_for(name, J)
+            if pv is None: problems.append('%s/%s: 회전축 관절을 joints.json에서 찾을 수 없음' % (p, f)); pv = [256, 500]
+            rec['pivot'] = pv
             parts[name] = rec
+        if d in ('left', 'right'):
+            miss = [p_ for p_ in PARTS_SIDE if p_ not in parts]
+            if miss: problems.append('%s: 측면 파츠 없음 %s' % (p, ', '.join(miss)))
+            jm = [j for j in JOINTS_SIDE if j not in J]
+            if jm: problems.append('%s/joints.json: 관절 없음 %s' % (p, ', '.join(jm)))
         bd['directions'][d] = {'parts': parts, 'joints': J}
     if 'front' in bd['directions']:
         bd['missing'] += ['머리카락 없는 머리(헤어 분리)', '가려진 부분 보완(겨드랑이·속옷 안 허벅지·턱 아래 목)']

@@ -57,6 +57,10 @@ button.chip[aria-pressed="true"] { border-color:var(--accent); background:color-
     <b>지금 없는 이미지</b>
     <ul class="miss" id="miss"></ul>
   </div>
+  <div class="card">
+    <b>파일 검사 결과 (넣은 PNG 자동 점검)</b>
+    <ul class="miss" id="probs"></ul>
+  </div>
 </div>
 <script src="lib/avatar.js"></script>
 <script>
@@ -149,7 +153,8 @@ button.chip[aria-pressed="true"] { border-color:var(--accent); background:color-
     stEl.textContent = (a.walk > 0.5 ? '걷기' : '대기') + ' · ' + { front: '정면', back: '뒷면', left: '왼쪽', right: '오른쪽' }[me.dir] + (warn.length ? ' · 이미지 필요' : '');
     stEl.className = 'pill' + (warn.length ? ' warn' : '');
   }
-  AV.load('assets/avatar/manifest.json').then(() => { refresh(); requestAnimationFrame(frame); });
+  AV.load('assets/avatar/manifest.json').then(() => { const pr = (AV.manifest && AV.manifest.problems) || []; const dl = Object.entries((AV.manifest && AV.manifest.bodies) || {}).map(([k, v]) => k + ': ' + Object.keys(v.directions || {}).join(', ')).join(' / ');
+    document.getElementById('probs').innerHTML = '<li style="color:inherit">들어온 방향 — ' + dl + '</li>' + (pr.length ? pr.map((x) => '<li>' + x.replace(/</g, '&lt;') + '</li>').join('') : '<li style="color:#2a8">문제 없음</li>'); refresh(); requestAnimationFrame(frame); });
 })();
 </script>
 </body>
