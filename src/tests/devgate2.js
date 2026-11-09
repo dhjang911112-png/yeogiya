@@ -1,0 +1,10 @@
+const { chromium } = require('playwright');
+(async () => { const b = await chromium.launch();
+  const cx = await b.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2 }); await cx.route('**/lib/firebase-config.js', r => r.fulfill({ body: 'window.YG_FIREBASE=null', contentType: 'text/javascript' }));
+  const p = await cx.newPage(); p.on('requestfailed', r => console.log('FAIL', r.url().slice(0,120))); p.on('pageerror', e => console.log('ERR', e.message.slice(0,300))); p.on('console', m => { if (m.type() === 'error') console.log('CON', m.text().slice(0, 300)); });
+  await p.goto('http://localhost:8080/index.html'); await p.waitForTimeout(500); await p.click('text=여자'); await p.fill('#nick', '시험'); await p.click('text=여기야 시작하기'); await p.waitForURL('**/game.html');
+  await p.goto('http://localhost:8080/game.html?broker=ws://localhost:8883&dev=1&avatar=force&avbody=female_pilot'); await p.waitForTimeout(3000);
+  console.log(await p.evaluate(() => JSON.stringify({ tab: __dc.state.tab, region: __dc.state.region, scene: __dc.state.scene, canv: document.querySelectorAll('canvas.yg-av').length })));
+  await p.evaluate(() => __dc.setState({ zoomI: 4 })); await p.waitForTimeout(300);
+  await p.keyboard.down('ArrowRight'); await p.waitForTimeout(700); await p.screenshot({ path: '../game_pilot.png' }); await p.keyboard.up('ArrowRight');
+ await b.close(); })();

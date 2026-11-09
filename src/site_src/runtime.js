@@ -90,11 +90,16 @@
   if (!id || !/^[a-z0-9]{8,16}$/.test(id)) { id = Math.random().toString(36).slice(2, 12).padEnd(10, '0'); YG.save('id', id); }
   YG.id = id;
   // 새 아바타 렌더러 시험 스위치: ?avatar=on|force|off (기기에 기억), 기본은 off
+  // 개발용 전용: ?dev=1 을 한 번 연 기기에서만 새 아바타 시험 가능(일반 이용자에게는 스위치도 안 보이고 항상 기존 그림). ?dev=0 으로 해제
   (function () {
-    const q = new URLSearchParams(location.search).get('avatar');
+    const u = new URLSearchParams(location.search), dv = u.get('dev');
+    if (dv === '1') YG.save('dev', true); else if (dv === '0') { YG.save('dev', false); YG.save('avatar_v2', 'off'); }
+    const q = u.get('avatar');
+    if (!YG.load('dev', false)) return;
     if (q === 'v2') YG.save('avatar_v2', 'on'); else if (q === 'on' || q === 'force' || q === 'off') YG.save('avatar_v2', q);
   })();
-  YG.avMode = function () { const v = YG.load('avatar_v2', 'off'); return v === 'on' || v === 'force' ? v : 'off'; };
+  YG.isDev = function () { return !!YG.load('dev', false); };
+  YG.avMode = function () { if (!YG.isDev()) return 'off'; const v = YG.load('avatar_v2', 'off'); return v === 'on' || v === 'force' ? v : 'off'; };
   YG.setAvMode = function (v) { YG.save('avatar_v2', v); if (v !== 'off' && window.YGAvatar) YGAvatar.load().then(() => window.__dc && window.__dc.forceUpdate()); };
   YG.connect = function () {
     if (!window.mqtt) return null;

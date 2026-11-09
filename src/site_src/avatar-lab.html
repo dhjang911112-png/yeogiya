@@ -43,11 +43,23 @@ button.chip[aria-pressed="true"] { border-color:var(--accent); background:color-
     <button class="chip" id="bd" aria-pressed="false">관절 표시</button>
     <button class="chip" id="bq" aria-pressed="false">디버그 마네킹(측면 검증)</button>
     <button class="chip" id="bw" aria-pressed="false">자동 걷기</button>
+    <button class="chip" id="bp" aria-pressed="false">시범: 메시 보행(여자 오른쪽)</button>
+  </div>
+  <div class="row" style="align-items:center;gap:8px;font-size:13px">
+    <label for="spd">이동 속도</label><input type="range" id="spd" min="40" max="128" step="4" value="128" style="flex:1"><b id="spdv">128</b><span style="color:var(--sub)">px/s · 걸음/초 <b id="cad">-</b></span>
   </div>
   <div class="stage" id="stage">
     <canvas id="cv"></canvas>
     <div class="hud"><span class="pill" id="st">대기</span><span class="pill" id="fps">-</span></div>
     <div class="stick" id="stick" aria-label="이동 조이스틱"><div class="knob" id="knob"></div></div>
+  </div>
+  <div class="card" id="gaitCard">
+    <b>걷기 키포즈 조정 (메시 보행 전용)</b>
+    <div class="sub" style="margin:4px 0 8px">키를 고르면 그 자세에서 멈춰 보여줘요. 값을 바꾸면 바로 반영돼요. "JSON 복사"로 값을 보내주시면 기본값으로 넣어 드려요.</div>
+    <div class="row" style="flex-wrap:wrap;gap:6px" id="gkeys"></div>
+    <div id="gform" style="display:grid;grid-template-columns:auto 1fr auto;gap:6px 8px;align-items:center;font-size:13px;margin-top:8px"></div>
+    <div class="row" style="gap:6px;margin-top:8px"><button class="chip" id="gplay">재생</button><button class="chip" id="gcopy">JSON 복사</button><button class="chip" id="greset">기본값</button></div>
+    <textarea id="gjson" style="width:100%;height:70px;font-size:11px;margin-top:6px" aria-label="키포즈 JSON"></textarea>
   </div>
   <div class="card">
     <b>장착 칸 (그림이 들어오면 자동 연결)</b>
@@ -89,6 +101,7 @@ button.chip[aria-pressed="true"] { border-color:var(--accent); background:color-
   const endStick = () => { sid = null; stick = { x: 0, y: 0 }; kEl.style.transform = ''; };
   sEl.addEventListener('pointerup', endStick); sEl.addEventListener('pointercancel', endStick);
   const btn = (id, f) => document.getElementById(id).addEventListener('click', f);
+  btn('bp', () => { const on = look.body !== 'female_pilot'; if (on) { savedBody = look.body; look.body = 'female_pilot'; me.dir = 'right'; } else look.body = savedBody || 'female_base'; document.getElementById('bp').setAttribute('aria-pressed', String(on)); prints.length = 0; refresh(); });
   btn('bm', () => { look.body = 'male_base'; document.getElementById('bm').setAttribute('aria-pressed', 'true'); document.getElementById('bf').setAttribute('aria-pressed', 'false'); refresh(); });
   btn('bf', () => { look.body = 'female_base'; document.getElementById('bf').setAttribute('aria-pressed', 'true'); document.getElementById('bm').setAttribute('aria-pressed', 'false'); refresh(); });
   btn('bd', () => { debug = !debug; document.getElementById('bd').setAttribute('aria-pressed', String(debug)); });
@@ -104,7 +117,27 @@ button.chip[aria-pressed="true"] { border-color:var(--accent); background:color-
   }
   window.__lab = { me: me, anim: anim, look: look, prints: prints, keys: keys, setStick: (x, y) => { stick = { x: x, y: y }; } };
   let last = performance.now(), fN = 0, fT = last, worst = 0;
-  const SPEED = 128; // 화면 px/s (게임과 동일)
+  let SPEED = 128; // 화면 px/s (게임과 동일, 아래 슬라이더로 시험)
+  const spdEl = document.getElementById('spd'); spdEl.oninput = () => { SPEED = +spdEl.value; document.getElementById('spdv').textContent = SPEED; };
+  // ---- 키포즈 편집기 ----
+  const GA = AV.GAIT; let gSel = null, gFreeze = null;
+  const KEYN = ['1 뒤꿈치 접지', '2 체중 받기', '3 한발 지지', '4 뒤꿈치 떼기', '5 발끝 떼기', '6 스윙 초반', '7 스윙 중간', '8 스윙 끝'];
+  function gRender() {
+    document.getElementById('gkeys').innerHTML = KEYN.map((n, i) => '<button class="chip" data-k="' + i + '" aria-pressed="' + (gSel === i) + '">' + n + '</button>').join('') + '<button class="chip" data-k="body" aria-pressed="' + (gSel === 'body') + '">몸·팔·보폭</button>';
+    document.querySelectorAll('#gkeys button').forEach((b) => b.onclick = () => { const k = b.dataset.k; gSel = k === 'body' ? 'body' : +k; gFreeze = typeof gSel === 'number' ? GA.leg[gSel].u : null; gRender(); });
+    const f = []; const add = (label, obj, key, step, min, max) => f.push([label, obj, key, step, min, max]);
+    if (typeof gSel === 'number') { const k = GA.leg[gSel]; add('위치 u(주기)', k, 'u', 0.01, 0, 0.99); if (k.x !== undefined) add('발 앞뒤 x(걸음 배수)', k, 'x', 0.02, -0.8, 0.8); if (k.lift !== undefined) add('발 높이(다리 배수)', k, 'lift', 0.005, 0, 0.3); add('발 각도(도, +발끝 위)', k, 'foot', 1, -60, 40); }
+    else if (gSel === 'body') { add('걸음 길이(다리 배수)', GA, 'stepLen', 0.02, 0.3, 1); add('디딤 비율', GA, 'stance', 0.01, 0.5, 0.7); GA.body.forEach((b, i) => { add('몸 ' + (i + 1) + ' 골반 높이', b, 'y', 0.002, -0.05, 0.05); add('몸 ' + (i + 1) + ' 앞 기울기(도)', b, 'lean', 0.2, -5, 10); add('몸 ' + (i + 1) + ' 머리(도)', b, 'head', 0.2, -5, 5); }); add('팔 흔들림(도)', GA.arm, 'swing', 1, 0, 40); add('팔 뒤로 비율', GA.arm, 'back', 0.05, 0, 1.5); add('팔꿈치 기본(도)', GA.arm, 'elbow', 1, 0, 40); add('팔꿈치 앞 추가(도)', GA.arm, 'elbowFwd', 1, 0, 40); add('팔 늦음(주기)', GA.arm, 'lag', 0.01, 0, 0.2); }
+    const el = document.getElementById('gform'); el.innerHTML = '';
+    f.forEach(([label, obj, key, step, min, max]) => { const l = document.createElement('label'); l.textContent = label; const r = document.createElement('input'); r.type = 'range'; r.min = min; r.max = max; r.step = step; r.value = obj[key]; const v = document.createElement('b'); v.textContent = obj[key]; r.oninput = () => { obj[key] = +r.value; v.textContent = r.value; if (key === 'u') gFreeze = +r.value; gSync(); }; el.append(l, r, v); });
+    gSync();
+  }
+  function gSync() { GA.leg.sort((a, b) => a.u - b.u); document.getElementById('gjson').value = JSON.stringify(GA); try { localStorage.setItem('yg_gait_side', JSON.stringify(GA)); } catch (e) {} Object.values(AV.manifest.bodies).forEach((b) => Object.values(b.directions).forEach((d) => { if (d._geo) d._geo._sinkFor = null; })); }
+  document.getElementById('gplay').onclick = () => { gFreeze = null; gSel = null; gRender(); };
+  document.getElementById('gcopy').onclick = () => { const t = document.getElementById('gjson'); t.select(); try { navigator.clipboard.writeText(t.value); } catch (e) { document.execCommand('copy'); } };
+  document.getElementById('greset').onclick = () => { const d = JSON.parse(JSON.stringify(AV.GAIT_DEFAULT)); Object.keys(GA).forEach((k) => delete GA[k]); Object.assign(GA, d); gRender(); };
+  document.getElementById('gjson').onchange = (e) => { try { const d = JSON.parse(e.target.value); Object.assign(GA, d); gRender(); } catch (er) {} };
+  window.__lab.gait = GA; window.__lab.freeze = (u) => { gFreeze = u; };
   function frame(t) {
     requestAnimationFrame(frame);
     const raw = t - last; last = t; const dt = Math.min(0.05, raw / 1000);
@@ -122,8 +155,11 @@ button.chip[aria-pressed="true"] { border-color:var(--accent); background:color-
     const ax = Math.abs(me.vx), ay = Math.abs(me.vy);
     if (moved > 0.01) { if (ax > ay * 1.2) me.dir = me.vx > 0 ? 'right' : 'left'; else if (ay > ax * 1.2) me.dir = me.vy > 0 ? 'front' : 'back'; }
     const S = Math.min(H * 0.34, 190) / 1000;
-    const a = anim.update(dt, moved, S, moved > 0.02, me.dir);
     look.dir = me.dir;
+    const aop = AV.animOpt(look);
+    let a = anim.update(dt, moved, S, moved > 0.02, me.dir, aop);
+    if (gFreeze !== null && aop.mesh) a = { phase: gFreeze, walk: 1, t: a.t, stopPhase: gFreeze };
+    if (aop.mesh) document.getElementById('cad').textContent = (SPEED / (aop.stepRig * S)).toFixed(1);
     // draw
     ctx.setTransform(DPR, 0, 0, DPR, 0, 0); ctx.clearRect(0, 0, W, H);
     ctx.strokeStyle = 'rgba(120,100,60,.12)'; ctx.lineWidth = 1;
@@ -138,7 +174,7 @@ button.chip[aria-pressed="true"] { border-color:var(--accent); background:color-
     // 디딤발 화면 위치 기록(미끄럼 측정) — 디딤 구간 가운데에서 찍음
     if (a.walk > 0.9) {
       const side = res.dir === 'left' || res.dir === 'right';
-      const stanceA = (a.phase % 1) < 0.5;
+      const stanceA = (a.phase % 1) < (AV.animOpt(look).mesh ? AV.GAIT.stance : 0.5);
       const which = side ? (stanceA ? 'Near' : 'Far') : (stanceA ? 'L' : 'R');
       const fp = AV.footPos(look, a, which);
       if (fp) {
@@ -154,7 +190,7 @@ button.chip[aria-pressed="true"] { border-color:var(--accent); background:color-
     stEl.className = 'pill' + (warn.length ? ' warn' : '');
   }
   AV.load('assets/avatar/manifest.json').then(() => { const pr = (AV.manifest && AV.manifest.problems) || []; const dl = Object.entries((AV.manifest && AV.manifest.bodies) || {}).map(([k, v]) => k + ': ' + Object.keys(v.directions || {}).join(', ')).join(' / ');
-    document.getElementById('probs').innerHTML = '<li style="color:inherit">들어온 방향 — ' + dl + '</li>' + (pr.length ? pr.map((x) => '<li>' + x.replace(/</g, '&lt;') + '</li>').join('') : '<li style="color:#2a8">문제 없음</li>'); refresh(); requestAnimationFrame(frame); });
+    document.getElementById('probs').innerHTML = '<li style="color:inherit">들어온 방향 — ' + dl + '</li>' + (pr.length ? pr.map((x) => '<li>' + x.replace(/</g, '&lt;') + '</li>').join('') : '<li style="color:#2a8">문제 없음</li>'); refresh(); gRender(); requestAnimationFrame(frame); });
 })();
 </script>
 </body>

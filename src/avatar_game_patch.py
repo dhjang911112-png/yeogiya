@@ -17,7 +17,7 @@ xdc = rep(xdc, '''          <span style="font-size: 12px; color: #3d3a35">헤어
           <span style="font-size: 11px; color: #b5532f; line-height: 1.4">{{avStatus}}</span>''')
 # profile: developer toggle
 xdc = rep(xdc, '''      <div style="display: flex; flex-direction: column; gap: 6px">
-        <label for="pnick"''', '''      <div style="padding: 12px 14px; border-radius: 14px; background: #fff8ea; border: 1px dashed #e0b04a; display: flex; flex-direction: column; gap: 8px">
+        <label for="pnick"''', '''      <sc-if value="{{isDev}}"><div style="padding: 12px 14px; border-radius: 14px; background: #fff8ea; border: 1px dashed #e0b04a; display: flex; flex-direction: column; gap: 8px">
         <span style="font-size: 13px; font-weight: 700">개발자 시험 · 새 아바타 렌더러</span>
         <span style="font-size: 11px; color: #6b665c; line-height: 1.5">{{avHelp}}</span>
         <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px">
@@ -25,7 +25,7 @@ xdc = rep(xdc, '''      <div style="display: flex; flex-direction: column; gap: 
             <button onClick="{{am.pick}}" aria-pressed="{{am.on}}" style="height: 36px; border-radius: 10px; border: 2px solid {{am.bc}}; background: {{am.bg}}; font-size: 12px; font-weight: 700; color: #2b2a26">{{am.label}}</button>
           </sc-for>
         </div>
-      </div>
+      </div></sc-if>
 
       <div style="display: flex; flex-direction: column; gap: 6px">
         <label for="pnick"''')
@@ -35,6 +35,8 @@ js = rep(js, "      const ret = {\n        left: o.x + 'px', top: o.y + 'px',", 
 js = rep(js, "      ret.hasTop = !!tf;", """      const avMode = YG.avMode();
       if (o.av && avMode !== 'off' && window.YGAvatar && YGAvatar.manifest && !o.sitting && !o.lying && !o.dancing) {
         const look = { body: o.av.b, equip: o.av.e || {}, dir: o.dir || 'front' };
+        // 개발 시험용: ?avbody=female_pilot (이 기기 화면에서만, 저장·전송 안 함)
+        const ovb = new URLSearchParams(location.search).get('avbody'); if (ovb && YGAvatar.manifest.bodies[ovb]) look.body = ovb;
         const chk = YGAvatar.canDraw(look, { bodyOnly: avMode === 'force' });
         if (chk.ok) {
           const S = CH / 960, dpr = Math.min(2, window.devicePixelRatio || 1) * (window.__ygScale || 1);
@@ -60,7 +62,8 @@ js = rep(js, "      eqTop: PREM[st.eq.top] ? PREM[st.eq.top].name : nameOf(st.eq
       eqAcc: (st.equipped || {}).accessory || '없음',
       avStatus: (() => { const mode = YG.avMode(); if (mode === 'off') return ''; const why = (this.avWhy || {}).me; return mode === 'force' ? '새 아바타(강제): 그림 없는 칸은 비워서 표시' : (why ? '새 아바타 켬 · 지금은 기존 그림으로 표시 (' + why + ')' : '새 아바타로 표시 중'); })(),""")
 # developer toggle data
-js = rep(js, "      isMe: st.tab === 'me',", """      avHelp: '끔: 기존 그림 / 켬: 몸·옷 그림이 모두 있는 방향만 새 렌더러, 없으면 기존 그림 / 강제: 그림 없는 옷 칸은 비우고 새 바디로(속옷 상태). 다른 사람에게는 각자 설정대로 보여요. 지금 상태: ' + ({ off: '끔', on: '켬', force: '강제' })[YG.avMode()],
+js = rep(js, "      isMe: st.tab === 'me',", """      isDev: YG.isDev(),
+      avHelp: '끔: 기존 그림 / 켬: 몸·옷 그림이 모두 있는 방향만 새 렌더러, 없으면 기존 그림 / 강제: 그림 없는 옷 칸은 비우고 새 바디로(속옷 상태). 다른 사람에게는 각자 설정대로 보여요. 지금 상태: ' + ({ off: '끔', on: '켬', force: '강제' })[YG.avMode()],
       avModes: [['off', '끔'], ['on', '켬'], ['force', '강제']].map((m) => ({ key: m[0], label: m[1], on: YG.avMode() === m[0] ? 'true' : 'false', bc: YG.avMode() === m[0] ? accent : '#e4ddce', bg: YG.avMode() === m[0] ? '#e6f3f0' : '#ffffff', pick: () => { YG.setAvMode(m[0]); this.avWhy = {}; this.forceUpdate(); } })),
       isMe: st.tab === 'me',""")
 # equip guard: every eq change goes through ownership check and keeps equipped in sync
@@ -98,7 +101,7 @@ js = rep(js, "\n  renderVals() {", r"""
       if (rec.me && this.mv) { x = this.mv.x; y = this.mv.y; moving = !!this.state.walking; }
       else { const id = key.slice(1); const p = this.remotePos ? this.remotePos(id, now) : null; const u = (this.state.users || {})[id]; if (!p || !u) return; x = p.x; y = p.y; moving = !!u.w; }
       const moved = an.x === null ? 0 : Math.hypot(x - an.x, y - an.y); an.x = x; an.y = y;
-      const a = an.a.update(dt, moved, rec.S, moving || moved > 0.05, rec.look.dir);
+      const a = an.a.update(dt, moved, rec.S, moving || moved > 0.05, rec.look.dir, YGAvatar.animOpt(rec.look));
       const ctx = cv.getContext('2d'); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, cv.width, cv.height);
       YGAvatar.draw(ctx, rec.look, a, { scale: cv.width / 512 });
     });

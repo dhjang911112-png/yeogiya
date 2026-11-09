@@ -161,7 +161,8 @@
        263,
        1000
       ]
-     }
+     },
+     "rig": "parts"
     },
     "left": {
      "parts": {
@@ -409,7 +410,8 @@
        256,
        1000
       ]
-     }
+     },
+     "rig": "parts"
     },
     "right": {
      "parts": {
@@ -657,13 +659,177 @@
        256,
        1000
       ]
-     }
+     },
+     "rig": "parts"
     }
    },
    "missing": [
     "back 방향 기본 바디",
     "머리카락 없는 머리(헤어 분리)",
     "가려진 부분 보완(겨드랑이·속옷 안 허벅지·턱 아래 목)"
+   ]
+  },
+  "female_pilot": {
+   "gender": "female",
+   "directions": {
+    "right": {
+     "parts": {
+      "armFar": {
+       "src": "assets/avatar/base/female_pilot/right/armFar.png",
+       "x": 300,
+       "y": 366,
+       "w": 149,
+       "h": 336,
+       "pivot": [
+        341.5,
+        397.9
+       ]
+      },
+      "armNear": {
+       "src": "assets/avatar/base/female_pilot/right/armNear.png",
+       "x": 88,
+       "y": 362,
+       "w": 146,
+       "h": 404,
+       "pivot": [
+        183.6,
+        397.9
+       ]
+      },
+      "head": {
+       "src": "assets/avatar/base/female_pilot/right/head.png",
+       "x": 58,
+       "y": 52,
+       "w": 364,
+       "h": 335,
+       "pivot": [
+        236.2,
+        359.8
+       ]
+      },
+      "legFar": {
+       "src": "assets/avatar/base/female_pilot/right/legFar.png",
+       "x": 251,
+       "y": 571,
+       "w": 148,
+       "h": 433,
+       "pivot": [
+        316.3,
+        596.9
+       ]
+      },
+      "legNear": {
+       "src": "assets/avatar/base/female_pilot/right/legNear.png",
+       "x": 157,
+       "y": 567,
+       "w": 172,
+       "h": 436,
+       "pivot": [
+        226.4,
+        594.1
+       ]
+      },
+      "torso": {
+       "src": "assets/avatar/base/female_pilot/right/torso.png",
+       "x": 151,
+       "y": 323,
+       "w": 205,
+       "h": 339,
+       "pivot": [
+        256,
+        594.1
+       ]
+      }
+     },
+     "joints": {
+      "neck": [
+       236.2,
+       359.8
+      ],
+      "shoulderNear": [
+       183.6,
+       397.9
+      ],
+      "elbowNear": [
+       134.3,
+       557.4
+      ],
+      "handNear": [
+       184.2,
+       713.9
+      ],
+      "hipNear": [
+       226.4,
+       594.1
+      ],
+      "kneeNear": [
+       236.8,
+       778.8
+      ],
+      "ankleNear": [
+       223.6,
+       966.7
+      ],
+      "shoulderFar": [
+       341.5,
+       397.9
+      ],
+      "elbowFar": [
+       367.8,
+       537.2
+      ],
+      "handFar": [
+       412.2,
+       660.9
+      ],
+      "hipFar": [
+       316.3,
+       596.9
+      ],
+      "kneeFar": [
+       328.3,
+       779.8
+      ],
+      "ankleFar": [
+       304.2,
+       966.9
+      ],
+      "root": [
+       256,
+       1000
+      ],
+      "ballNear": [
+       282.8,
+       989.0
+      ],
+      "toeNear": [
+       323.0,
+       993.0
+      ],
+      "heelNear": [
+       189.0,
+       995.0
+      ],
+      "ballFar": [
+       357.2,
+       990.0
+      ],
+      "toeFar": [
+       392.0,
+       994.0
+      ],
+      "heelFar": [
+       276.0,
+       996.0
+      ]
+     },
+     "rig": "mesh"
+    }
+   },
+   "missing": [
+    "front 방향 기본 바디",
+    "back 방향 기본 바디",
+    "left 방향 기본 바디"
    ]
   },
   "male_base": {
@@ -787,7 +953,8 @@
        256,
        1000
       ]
-     }
+     },
+     "rig": "parts"
     },
     "left": {
      "parts": {
@@ -1035,7 +1202,8 @@
        256,
        1000
       ]
-     }
+     },
+     "rig": "parts"
     },
     "right": {
      "parts": {
@@ -1283,7 +1451,8 @@
        256,
        1000
       ]
-     }
+     },
+     "rig": "parts"
     }
    },
    "missing": [

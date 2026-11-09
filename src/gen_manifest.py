@@ -87,7 +87,8 @@ for body in sorted(os.listdir(ART + '/base')):
     for d in DIRS:
         p = ART + '/base/%s/%s' % (body, d)
         if not os.path.isdir(p): bd['missing'].append(d + ' 방향 기본 바디'); continue
-        J = json.load(open(p + '/joints.json'))['joints'] if os.path.exists(p + '/joints.json') else {}
+        JD = json.load(open(p + '/joints.json')) if os.path.exists(p + '/joints.json') else {}
+        J = JD.get('joints', {}); rig = JD.get('rig', 'parts')
         if not J: problems.append('%s: joints.json 없음' % p)
         parts = {}
         for f in sorted(os.listdir(p)):
@@ -100,12 +101,17 @@ for body in sorted(os.listdir(ART + '/base')):
             if pv is None: problems.append('%s/%s: 회전축 관절을 joints.json에서 찾을 수 없음' % (p, f)); pv = [256, 500]
             rec['pivot'] = pv
             parts[name] = rec
-        if d in ('left', 'right'):
+        if d in ('left', 'right') and rig == 'mesh':
+            miss = [p_ for p_ in ['head', 'torso', 'legNear', 'legFar', 'armNear', 'armFar'] if p_ not in parts]
+            if miss: problems.append('%s: 메시 리그 파츠 없음 %s' % (p, ', '.join(miss)))
+            jm = [j for j in JOINTS_SIDE + ['ballNear', 'ballFar', 'toeNear', 'toeFar', 'heelNear', 'heelFar'] if j not in J]
+            if jm: problems.append('%s/joints.json: 관절 없음 %s' % (p, ', '.join(jm)))
+        elif d in ('left', 'right'):
             miss = [p_ for p_ in PARTS_SIDE if p_ not in parts]
             if miss: problems.append('%s: 측면 파츠 없음 %s' % (p, ', '.join(miss)))
             jm = [j for j in JOINTS_SIDE if j not in J]
             if jm: problems.append('%s/joints.json: 관절 없음 %s' % (p, ', '.join(jm)))
-        bd['directions'][d] = {'parts': parts, 'joints': J}
+        bd['directions'][d] = {'parts': parts, 'joints': J, 'rig': rig}
     if 'front' in bd['directions']:
         bd['missing'] += ['머리카락 없는 머리(헤어 분리)', '가려진 부분 보완(겨드랑이·속옷 안 허벅지·턱 아래 목)']
     M['bodies'][body] = bd
