@@ -16,6 +16,8 @@ for f in os.listdir(ASSET_SRC):
     ext[i] = e
     if not os.path.exists(OUT + 'assets/' + f):
         shutil.copy(ASSET_SRC + f, OUT + 'assets/' + f)
+os.makedirs(OUT + 'assets/bg', exist_ok=True)
+for f in os.listdir(B + '/bg'): shutil.copy(B + '/bg/' + f, OUT + 'assets/bg/' + f)
 NM = B + '/npmw/node_modules/'
 shutil.copy(NM + 'preact/dist/preact.min.umd.js', OUT + 'lib/preact.min.js')
 shutil.copy(NM + 'mqtt/dist/mqtt.min.js', OUT + 'lib/mqtt.min.js')

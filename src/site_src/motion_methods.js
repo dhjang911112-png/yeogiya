@@ -1,6 +1,14 @@
   // ================= Phase A: smooth movement / camera (requestAnimationFrame) =================
   // World units are map pixels. Speeds are per second, so movement is frame-rate independent.
   motionInit() {
+    // 저장된 위치가 바뀐 지형(예: 새 해운대 배경의 바다) 안이면 바로 아래 걸을 수 있는 곳으로 옮김
+    try {
+      const s0 = this.state;
+      if (!s0.barOf && this.blocked(s0.area, s0.px, s0.py)) {
+        let ny = s0.py; while (ny < s0.py + 900 && this.blocked(s0.area, s0.px, ny)) ny += 10;
+        this.state = Object.assign({}, s0, { py: ny });
+      }
+    } catch (e) {}
     this.mv = { x: this.state.px, y: this.state.py, vx: 0, vy: 0, cx: this.state.px, cy: this.state.py, area: this.state.area,
       target: null, keys: new Set(), dist: 0, lastSync: 0, sync: true, moving: false };
     this.remoteHist = {};

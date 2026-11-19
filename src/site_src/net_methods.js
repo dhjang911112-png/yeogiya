@@ -64,6 +64,7 @@
   }
 
   isAdmin() { return !!(YG.acct && YG.acct.nick === '운영자' && window.YGA && YGA.user); }
+  isAdminNick(n) { return n === '운영자'; }
 
   parseWon(str) {
     let s = String(str || '').replace(/[,원\s]/g, '');
@@ -80,6 +81,8 @@
   slashCmd(raw) {
     const cmd = raw.slice(1).trim().split(/\s+/)[0];
     if (cmd === '폭죽') { this.fireCmd(); return; }
+    if (['춤멈춰', '춤그만', '춤정지', '춤멈춤'].indexOf(cmd) >= 0) { this.danceCmd(false); return; }
+    if (['춤시작', '춤춰'].indexOf(cmd) >= 0) { this.danceCmd(true); return; }
     this.adminCmd(raw);
   }
 
@@ -98,11 +101,30 @@
     this.saveLocal(true);
   }
 
+  // /춤멈춰 · /춤시작 — 지금 있는 곳(클럽 등)의 춤추는 사람을 멈추거나 다시 춤추게 함
+  // 누구나: 클럽 댄서(NPC)와 내 춤. 운영자: 같은 곳에서 춤추는 실제 이용자들도 멈춤
+  danceCmd(on) {
+    const st = this.state, admin = this.isAdmin();
+    if (Date.now() - (this.lastDanceCmd || 0) < 2000) { this.flash('잠깐 뒤에 다시 해 주세요', true); return; }
+    this.lastDanceCmd = Date.now();
+    const peersDancing = Object.keys(st.users || {}).filter((id) => st.users[id].area === st.area && st.users[id].dance).length;
+    const npc = st.area === 'club';
+    if (!on && !npc && !st.dancing && !peersDancing) { this.flash('여기엔 춤추는 사람이 없어요', true); return; }
+    if (!on && !npc && !st.dancing && peersDancing && !admin) { this.flash('다른 이용자의 춤은 운영자만 멈출 수 있어요', true); return; }
+    const patch = {};
+    if (npc) patch.clubDanceOff = !on;
+    if (!on) patch.dancing = false;
+    this.setState(patch);
+    this.pub('fx', { id: this.myId, name: this.myName(), area: st.area, barOf: this.myBarOf(), kind: 'dance', on: on ? 1 : 0, all: admin && !on ? 1 : 0 });
+    if (on) this.flash(npc ? '댄서들이 다시 춤을 춰요!' : '/춤시작은 클럽에서 댄서들에게 쓸 수 있어요', !npc);
+    else this.flash(admin && peersDancing ? '여기서 춤추던 사람들을 모두 멈췄어요' : (npc ? '댄서들이 춤을 멈췄어요' : '춤을 멈췄어요'), false);
+  }
+
   adminCmd(raw) {
     const fmt = (n) => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
     const parts = raw.slice(1).trim().split(/\s+/);
     const cmd = parts[0];
-    if (cmd !== '지급') { this.flash('명령어: /폭죽 (해운대·광안리)' + (this.isAdmin() ? ' · /지급 닉네임 금액' : ''), true); return; }
+    if (cmd !== '지급') { this.flash('명령어: /폭죽 (해운대·광안리) · /춤멈춰 · /춤시작' + (this.isAdmin() ? ' · /지급 닉네임 금액' : ''), true); return; }
     if (!this.isAdmin()) { this.flash('운영자 계정만 쓸 수 있는 명령이에요', true); return; }
     const nick = parts[1], amount = this.parseWon(parts.slice(2).join(''));
     if (!nick || !amount || isNaN(amount) || amount <= 0) { this.flash('예: /지급 kk 2000만  ·  /지급 kk 500000', true); return; }
@@ -283,6 +305,19 @@
       if (m.gone) delete this.peers[id];
       else { m.seen = Date.now(); this.peers[id] = m; if (this.remoteSample) this.remoteSample(id, m); }
       this.netSync(); return;
+    }
+    if (t === 'fx' && m.kind === 'dance') {
+      if (m.id === this.myId || m.area !== st.area || (m.barOf || '') !== this.myBarOf()) return;
+      const p2 = {}, who = clip(m.name, 12);
+      if (st.area === 'club') p2.clubDanceOff = !m.on;
+      // 실제 이용자의 춤은 운영자 명령일 때만 멈춤(받는 쪽에서 운영자 확인)
+      const fromAdmin = m.all && this.peers[m.id] && this.isAdminNick && this.isAdminNick(this.peers[m.id].name);
+      if (!m.on && fromAdmin && st.dancing) p2.dancing = false;
+      if (Object.keys(p2).length) {
+        p2.log = st.log.concat([{ who: '여기야', text: who + '님이 ' + (m.on ? '다시 음악을 틀었어요!' : (p2.dancing === false ? '춤을 멈추게 했어요' : '댄서들의 춤을 멈췄어요')) }]).slice(-3);
+        this.setState(p2);
+      }
+      return;
     }
     if (t === 'fx') {
       if (m.id === this.myId || m.kind !== 'fireworks' || m.area !== st.area || this.myBarOf()) return;
