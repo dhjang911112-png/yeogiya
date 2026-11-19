@@ -96,6 +96,12 @@ const PREM = {
   gcard: { name: '녹색 루즈핏 롱가디건', cat: 'top', price: 340000, icon: 'assets/wear/gcard_icon.png' }
 };
 const INV_MAX = 6, WEAR_MAX = 4;
+// 그림이 아직 없는 옷(입어도 모습이 안 바뀜) → 입기 막음. 청바지·스니커즈는 후드티 세트에 포함
+const NOART = { tee: 1, shirt: 1, tank: 1, slacks: 1, shorts: 1, loafers: 1, runners: 1 };
+const eqNorm = (eq) => { const e = Object.assign({ top: '', bottom: '', shoes: '' }, eq || {});
+  ['top', 'bottom', 'shoes'].forEach((c) => { if (NOART[e[c]]) e[c] = ''; });
+  if (e.top === 'hoodie') { e.bottom = 'jeans'; e.shoes = 'sneakers'; } else { if (e.bottom === 'jeans') e.bottom = ''; if (e.shoes === 'sneakers') e.shoes = ''; }
+  return e; };
 
 class Component extends DCLogic {
   constructor(props) {
@@ -106,7 +112,7 @@ class Component extends DCLogic {
       share: true, chatText: '', myBubble: '',
       log: [{ who: '부산갈매기', text: '오늘 해운대 바람 좋다' }, { who: '광안리노을', text: '누구 같이 산책할 사람?' }],
       shift: null, shiftDone: false, lastJob: null, phaseOffset: 0, npc: {}, tick: 0,
-      cat: 'all', owned: { hoodie: true, jeans: true, sneakers: true }, eq: { top: '', bottom: 'jeans', shoes: 'sneakers' },
+      cat: 'all', owned: { hoodie: true, jeans: true, sneakers: true }, eq: { top: '', bottom: '', shoes: '' },
       toast: '', toastBad: false,
       users: {
         gull: { name: '부산갈매기', area: 'haeundae', g: 'male', f: 'front', x: 300, y: 500, like: 128, flirted: false, friend: false, reports: 0, reported: false, banned: false, height: 181, region: '해운대구', pin: '해운대 해수욕장', bubble: '오늘 해운대 바람 좋다' },
@@ -136,6 +142,7 @@ class Component extends DCLogic {
       if (st.eq.hair && st.inv.indexOf(st.eq.hair) < 0) st.eq.hair = '';
       if (PREM[st.eq.top] && st.inv.indexOf(st.eq.top) < 0) st.eq.top = '';
       if (!sv.uw1 && st.eq && st.eq.top === 'hoodie') st.eq = Object.assign({}, st.eq, { top: '' }); // 속옷 기본으로 바뀐 뒤 한 번만: 후드티 벗김(아이템은 그대로 보유)
+      st.eq = eqNorm(st.eq);
       st.users = {}; st.log = [{ who: '여기야', text: '같은 동네에 있는 진짜 사람들이 실시간으로 보여요' }];
     })(this.state, this);
     this.peers = {}; this.pws = {}; this.games = {}; this.rel = {}; this.likedBy = {}; this.reportedBy = {};
@@ -719,7 +726,7 @@ class Component extends DCLogic {
     const e = Object.assign({}, eq);
     if (e.hair && inv.indexOf(e.hair) < 0) e.hair = '';
     if (PREM[e.top] && inv.indexOf(e.top) < 0) e.top = '';
-    return e;
+    return eqNorm(e);
   }
 
   tradeSend(to, give, want) {
@@ -986,7 +993,7 @@ class Component extends DCLogic {
     const st = this.state;
     const outside = st.area !== 'bar' && st.area !== 'club' && !st.travel;
     const o = outside ? { area: st.area, px: st.px, py: st.py } : (st.outPos ? { area: st.outPos.area, px: st.outPos.px, py: st.outPos.py + 10 } : {});
-    const data = Object.assign({ money: st.money, owned: st.owned, eq: st.eq, prof: st.prof, myLike: st.myLike, gender: st.gender, share: st.share, energy: st.energy, fireworks: st.fireworks || 0, inv: st.inv || [], uw1: 1 }, o);
+    const data = Object.assign({ money: st.money, owned: st.owned, eq: eqNorm(st.eq), prof: st.prof, myLike: st.myLike, gender: st.gender, share: st.share, energy: st.energy, fireworks: st.fireworks || 0, inv: st.inv || [], uw1: 1 }, o);
     if (YG.acct && window.YGA) {
       data.prof = Object.assign({}, st.prof, { nick: YG.acct.nick });
       if (!force && Date.now() - (this.acctAt || 0) < 30000) return;
@@ -1485,24 +1492,26 @@ class Component extends DCLogic {
     const catDefs = [['all', '전체'], ['top', '상의'], ['bottom', '하의'], ['shoes', '신발'], ['hair', '헤어'], ['item', '아이템']];
     const cats = catDefs.map((c) => ({ label: c[1], on: st.cat === c[0] ? 'true' : 'false', bg: st.cat === c[0] ? '#2b2a26' : '#efe9dd', fg: st.cat === c[0] ? '#ffffff' : '#3d3a35', pick: () => this.setState({ cat: c[0] }) }));
     const nameOf = (id) => (items.find((i) => i.id === id) || {}).name || '';
-    const shown = items.filter((i) => st.cat === 'all' || i.cat === st.cat).map((i) => {
+    const eqv = eqNorm(st.eq);
+    const shown = items.filter((i) => (st.cat === 'all' || i.cat === st.cat) && i.id !== 'jeans' && i.id !== 'sneakers').map((i) => {
       if (PREM[i.id]) { const P = PREM[i.id]; const inv = st.inv || []; const afford = st.money >= i.price; const full = inv.length >= INV_MAX; const have = inv.filter((x) => x === i.id).length; return { name: i.name, pos: 'center', bi: 'url(' + i.img + ')', bs: 'contain', priceText: fmt(i.price) + '원' + (P.male ? ' · 남자 전용' : '') + (have ? ' · 보관 ' + have + '개' : ''), btn: full ? '보관함 가득' : '구매', btnBg: afford && !full ? accent : '#d8d2c6', btnFg: '#ffffff', disabled: false, border: '#ece5d6', act: () => { const s2 = this.state; const inv2 = s2.inv || []; if (inv2.length >= INV_MAX) { this.flash('보관함(6칸)이 가득 찼어요. 거래로 정리해 주세요', true); return; } if (s2.money < i.price) { this.flash('머니가 부족해요. 알바로 벌어오세요!', true); return; } this.setState({ money: s2.money - i.price, inv: inv2.concat([i.id]) }); this.flash(i.name + ' 구매! 보관함에 넣었어요. 보관함에서 꺼내 착용하세요', false); this.saveLocal(true); } }; }
       if (i.cat === 'item') { const have = st.fireworks || 0; const afford = st.money >= i.price; return { name: i.name + ' (보유 ' + have + '개)', pos: 'center', bi: 'url(' + i.img + ')', bs: 'contain', priceText: fmt(i.price) + '원 · 채팅창에 /폭죽', btn: '구매', btnBg: afford ? accent : '#d8d2c6', btnFg: '#ffffff', disabled: false, border: '#ece5d6', act: () => { const s2 = this.state; if (s2.money < i.price) { this.flash('머니가 부족해요. 알바로 벌어오세요!', true); return; } this.setState({ money: s2.money - i.price, fireworks: (s2.fireworks || 0) + 1 }); this.flash('폭죽 1개 구매! 해운대·광안리에서 채팅창에 /폭죽', false); this.saveLocal(true); } }; }
       const owned = !!st.owned[i.id];
-      const worn = st.eq[i.cat] === i.id;
+      const worn = eqv[i.cat] === i.id;
       const afford = st.money >= i.price;
       let btn, bg, fg, act, disabled = false;
-      if (worn && i.cat === 'top') { btn = '벗기'; bg = '#e6f3f0'; fg = accent; act = () => { this.setState({ eq: Object.assign({}, this.state.eq, { top: '' }) }); this.flash(i.name + ' 벗었어요', false); this.saveLocal(true); }; }
+      if (NOART[i.id]) { btn = '그림 준비 중'; bg = '#efeae0'; fg = '#8a857a'; act = () => {}; disabled = true; }
+      else if (worn && i.cat === 'top') { btn = '벗기'; bg = '#e6f3f0'; fg = accent; act = () => { this.setState({ eq: eqNorm(Object.assign({}, this.state.eq, { top: '' })) }); this.flash(i.name + ' 벗었어요', false); this.saveLocal(true); }; }
       else if (worn) { btn = '착용 중'; bg = '#e6f3f0'; fg = accent; act = () => {}; disabled = true; }
-      else if (owned) { btn = '입기'; bg = '#2b2a26'; fg = '#ffffff'; act = () => { this.setState({ eq: Object.assign({}, st.eq, { [i.cat]: i.id }) }); this.flash(i.name + ' 착용!', false); }; }
+      else if (owned) { btn = '입기'; bg = '#2b2a26'; fg = '#ffffff'; act = () => { this.setState({ eq: eqNorm(Object.assign({}, this.state.eq, { [i.cat]: i.id })) }); this.flash(i.name + ' 착용!', false); }; }
       else { btn = '구매'; bg = afford ? accent : '#d8d2c6'; fg = '#ffffff';
         act = () => {
           if (st.money < i.price) { this.flash('머니가 부족해요. 알바로 벌어오세요!', true); return; }
-          this.setState({ money: st.money - i.price, owned: Object.assign({}, st.owned, { [i.id]: true }), eq: Object.assign({}, st.eq, { [i.cat]: i.id }) });
+          this.setState({ money: st.money - i.price, owned: Object.assign({}, st.owned, { [i.id]: true }), eq: eqNorm(Object.assign({}, st.eq, { [i.cat]: i.id })) });
           this.flash(i.name + ' 구매하고 바로 입었어요!', false);
         };
       }
-      return { name: i.name, pos: i.pos, priceText: i.price === 0 ? '기본 아이템' : fmt(i.price) + '원', btn: btn, btnBg: bg, btnFg: fg, act: act, disabled: disabled, border: worn ? accent : '#ece5d6' };
+      return { name: i.name, pos: i.pos, priceText: i.id === 'hoodie' ? '청바지·스니커즈 포함' : (i.price === 0 ? '기본 아이템' : fmt(i.price) + '원'), btn: btn, btnBg: bg, btnFg: fg, act: act, disabled: disabled, border: worn ? accent : '#ece5d6' };
     });
 
     return {
@@ -1679,16 +1688,16 @@ class Component extends DCLogic {
           let btn = worn ? '해제' : (blocked ? '남자 전용' : '착용');
           const act = () => {
             const s2 = this.state; const eq = Object.assign({}, s2.eq);
-            if (worn) { eq[P.cat] = ''; this.setState({ eq: eq }); this.flash(P.name + ' 해제했어요', false); this.saveLocal(true); return; }
+            if (worn) { eq[P.cat] = ''; this.setState({ eq: eqNorm(eq) }); this.flash(P.name + ' 해제했어요', false); this.saveLocal(true); return; }
             if (blocked) return;
-            eq[P.cat] = id; this.setState({ eq: eq }); this.flash(P.name + ' 착용!', false); this.saveLocal(true);
+            eq[P.cat] = id; this.setState({ eq: eqNorm(eq) }); this.flash(P.name + ' 착용!', false); this.saveLocal(true);
           };
           slots.push({ key: 'sl' + s, full: true, empty: false, icon: P.icon, name: P.name, btn: btn, act: act, dis: !worn && blocked, btnBg: worn ? '#2b2a26' : (blocked ? '#d8d2c6' : accent), bs: 'solid', bc: worn ? accent : '#ece5d6', bg: worn ? '#e6f3f0' : '#ffffff' });
         }
         return { invSlots: slots, invInfo: '보관 ' + inv.length + '/' + INV_MAX + ' · 착용 ' + wornN + '/' + WEAR_MAX };
       })(),
       eqHair: st.eq.hair && PREM[st.eq.hair] ? PREM[st.eq.hair].name : '기본',
-      eqTop: PREM[st.eq.top] ? PREM[st.eq.top].name : (nameOf(st.eq.top) || '없음 (기본)'), eqBottom: nameOf(st.eq.bottom), eqShoes: nameOf(st.eq.shoes),
+      eqTop: PREM[eqv.top] ? PREM[eqv.top].name : (nameOf(eqv.top) || '없음 (기본)'), eqBottom: nameOf(eqv.bottom) || '없음 (기본)', eqShoes: nameOf(eqv.shoes) || '없음 (맨발)',
       cats: cats, items: shown,
       hasToast: !!st.toast && (st.tab === 'shop' || st.tab === 'me') && !sh, toast: st.toast, toastColor: st.toastBad ? '#b5532f' : accent,
       hasMapToast: !!st.toast && (st.tab === 'map' || !!sh) && !st.travel,
