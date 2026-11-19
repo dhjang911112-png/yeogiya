@@ -23,6 +23,7 @@ sid, msheet, fsheet, outdir = sys.argv[1:5]
 os.makedirs(outdir, exist_ok=True)
 FRS, HB, TB = {}, {}, {}
 for g, sheet in (('male', msheet), ('female', fsheet)):
+    if sheet == '-': continue
     F = figures(sheet)
     FRS[g] = {}
     for d in ['front', 'back', 'left', 'right']:
