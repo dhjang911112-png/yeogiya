@@ -11,7 +11,11 @@ SRC = ROOT + '/art/underwear'
 DIRS = ['front', 'back', 'left', 'right']
 
 
+BB = {}
+
+
 def figures(path):
+    BB.clear()
     a = np.array(Image.open(path).convert('RGBA'))
     solid = a[..., 3] > 200
     lab, n = ndimage.label(solid)
@@ -36,6 +40,7 @@ def figures(path):
             ys, xs = np.where(p[..., 3] > 30)
             bb = (xs.min() - 2, ys.min() - 2, xs.max() + 3, ys.max() + 1)
             out[(d, c)] = Image.fromarray(p).crop(bb)
+            BB[(d, c)] = [int(v) for v in bb]
     return out
 
 
@@ -50,6 +55,6 @@ if __name__ == '__main__':
             buf = im.tobytes()
             hid = hashlib.md5(('uw-' + g + d + str(c)).encode() + buf[:4096]).hexdigest()
             im.save('%s/%s.png' % (outdir, hid), optimize=True)
-            res[g].setdefault(d, []).append({'id': hid, 'W': im.size[0], 'H': im.size[1]})
+            res[g].setdefault(d, []).append({'id': hid, 'W': im.size[0], 'H': im.size[1], 'bb': BB[(d, c)]})
     json.dump(res, open(outdir + '/uw_frames.json', 'w'), indent=1)
     print(json.dumps({g: {d: [(f['W'], f['H']) for f in v] for d, v in res[g].items()} for g in res}))
